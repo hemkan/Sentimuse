@@ -18,8 +18,20 @@ class PoemRequest(BaseModel):
 #pass poem to pipeline for processing
 #output: emotion label and score
 async def analyze_sentiment(request: PoemRequest):
-    result = sentiment_pipeline(request.text)
-    return {"emotion": result[0]["label"], "score": result[0]["score"]}
-    #currently only returns highest scoring emotion, will have it return 2? more
+    pipelineResults = sentiment_pipeline(request.text)
+
+    #grab top 3 emotions
+    if len(pipelineResults) >= 3:
+        finalResults = pipelineResults[:3]
+    #if less than 3 emotions
+    else:
+        finalResults = pipelineResults
+
+    #add final results to list
+    emotion_list = []
+    for emotion in finalResults:
+        emotion_list.append( {"emotion": emotion["label"], "score": emotion["score"]} )
+
+    return {"emotion_list": emotion_list}
 
 #test with uvicorn sentiment_api:app --reload
