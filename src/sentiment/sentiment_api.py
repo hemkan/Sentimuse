@@ -8,7 +8,7 @@ app = FastAPI()
 #load DistilRoBERTa
 sentiment_pipeline = pipeline("text-classification", model = "j-hartmann/emotion-english-distilroberta-base")
 
-#define structure of incoming data (string)
+#define structure of incoming data as string
 class PoemRequest(BaseModel):
     text: str
 
@@ -16,7 +16,7 @@ class PoemRequest(BaseModel):
 @app.post("/analyze/")
 #input: poem
 #pass poem to pipeline for processing
-#output: emotion label and score
+#output: list of top 3 emotions and thier scores
 async def analyze_sentiment(request: PoemRequest):
     pipelineResults = sentiment_pipeline(request.text)
 
