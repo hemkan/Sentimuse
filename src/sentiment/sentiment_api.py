@@ -6,7 +6,7 @@ from transformers import pipeline
 app = FastAPI()
 
 #load DistilRoBERTa
-sentiment_pipeline = pipeline("text-classification", model = "j-hartmann/emotion-english-distilroberta-base")
+sentiment_pipeline = pipeline("text-classification", model = "j-hartmann/emotion-english-distilroberta-base", top_k = None)
 
 #define structure of incoming data as string
 class PoemRequest(BaseModel):
@@ -18,7 +18,7 @@ class PoemRequest(BaseModel):
 #pass poem to pipeline for processing
 #output: list of top 3 emotions and thier scores
 async def analyze_sentiment(request: PoemRequest):
-    pipelineResults = sentiment_pipeline(request.text)
+    pipelineResults = sentiment_pipeline(request.text)[0] #extract first list from pipeline
 
     #grab top 3 emotions
     if len(pipelineResults) >= 3:
