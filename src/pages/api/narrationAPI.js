@@ -1,7 +1,13 @@
 import { ElevenLabsClient } from "elevenlabs";
 
+const apiKey = process.env.ELEVENLABS_API_KEY;
+
+if (!apiKey) {
+  res.status(500).json({ error: "No API Key" });
+}
+
 const elevenLabs = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
+  apiKey,
 });
 
 export default async function getNarrationStream(req, res) {
