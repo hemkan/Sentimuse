@@ -10,6 +10,7 @@ export default async function handler(req, res)
     {
         //extract poem from request body through object deconstruction
         const { poem } = req.body;
+        //console.log(req.body);
 
         //return error if there is no text
         if (!poem)
