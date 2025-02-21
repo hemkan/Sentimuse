@@ -18,7 +18,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.MUBERT_API_KEY}`, // Replace with real API key
+        Authorization: `Bearer ${process.env.MUBERT_API_KEY}`, // (Replace with real API key)
       },
       body: JSON.stringify({
         text: prompt, // Pass music prompt
