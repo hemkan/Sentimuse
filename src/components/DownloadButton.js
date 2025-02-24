@@ -7,6 +7,7 @@ export default function DownloadButton() {
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // if any file is selected, set the file in state
   const handleFileChange = (e, setFile) => {
     const file = e.target.files[0];
     if (file) {
@@ -14,11 +15,14 @@ export default function DownloadButton() {
     }
   };
 
+  // handle the download button click
   const handleDownload = async () => {
     if (!narrationFile || !musicFile) {
       alert("Please select both narration and music files.");
       return;
     }
+
+    setLoading(true);
 
     // upload files to Supabase
     let narrationUrl = await uploadToSupabase(narrationFile);
@@ -31,6 +35,7 @@ export default function DownloadButton() {
     }
     console.log("Uploaded URLs:", { narrationUrl, musicUrl });
 
+    // put the URLs in the correct format
     if (narrationUrl?.data?.publicUrl)
       narrationUrl = narrationUrl.data.publicUrl;
     if (musicUrl?.data?.publicUrl) musicUrl = musicUrl.data.publicUrl;
@@ -58,8 +63,21 @@ export default function DownloadButton() {
     const audioBlob = await response2.blob();
     const file = new File([audioBlob], "output.mp3", { type: "audio/mpeg" });
 
+    // create a download link and trigger it
+    const url = URL.createObjectURL(audioBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "output.mp3";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // upload the MP3 file to Supabase
     const supabaseUrl = await uploadToSupabase(file);
     console.log("Uploaded to Supabase:", supabaseUrl);
+
+    setLoading(false);
   };
 
   return (

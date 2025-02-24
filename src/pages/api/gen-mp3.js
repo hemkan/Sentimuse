@@ -4,6 +4,7 @@ import { PassThrough } from "stream";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
+// this is for temporary testing
 export const config = {
   api: {
     bodyParser: true,
@@ -24,8 +25,10 @@ export default async function handler(req, res) {
   }
 
   try {
+    // pipe for streaming the output
     const outputStream = new PassThrough();
 
+    // process the audio
     ffmpeg()
       .input(narrationUrl)
       .input(musicUrl)
@@ -45,6 +48,7 @@ export default async function handler(req, res) {
       })
       .pipe(outputStream);
 
+    // if the stream errors, return an error response
     outputStream.on("error", (err) => {
       console.error("Stream error:", err);
       if (!res.headersSent) {
@@ -52,9 +56,12 @@ export default async function handler(req, res) {
       }
     });
 
+    // set the response headers
+    res.status(200);
     res.setHeader("Content-Type", "audio/mpeg");
     res.setHeader("Content-Disposition", "attachment; filename=output.mp3");
 
+    // pipe the output stream to the response
     outputStream.pipe(res);
   } catch (error) {
     console.error("Error processing audio:", error);
