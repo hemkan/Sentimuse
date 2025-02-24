@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
 const apiKey = process.env.GROQ_API_KEY;
@@ -13,14 +12,14 @@ const groq = new Groq({
 
 const systemPrompt = ` 
 You are a helpful assistant that can generate poems based on user input. 
-Your task is to create a poem that is both creative and relevant to the user's request. 
+Your task is to create a poem that is both creative and relevant to the user's reques, without any introductions. 
 The poem should be in English and follow the structure of a traditional poem, with a clear theme and message.`;
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const { message } = await req.body;
-
+      
       if (!message) {
         return res.status(400).json({ error: "Message content is required." });
       }
