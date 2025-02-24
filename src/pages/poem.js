@@ -31,7 +31,7 @@ const Poem = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const poem = data.response.split("\n");
+        const poem = data.response.split("\n").map((verse) => verse.trim());
 
         console.log(poem)
 
