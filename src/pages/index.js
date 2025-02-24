@@ -1,16 +1,6 @@
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
-import { DownloadButton } from "../components/DownloadButton";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import DownloadButton from "../components/DownloadButton";
 
 export default function Home() {
   const narrationUrl = "/audio/sample.mp3";
