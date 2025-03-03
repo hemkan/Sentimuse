@@ -5,8 +5,9 @@ const Sentiment = () =>
 {
   //declare state variables
   const [poem, setPoem] = useState(""); //holds/sets poem
-  const [sentiment, setSentiment] = useState(""); //holds/sets sentiment
-  const [userSentiment, setUserSentiment] = useState("");
+  const [sentiment, setSentiment] = useState(""); //holds/sets AI sentiment
+  const [userSentiment, setUserSentiment] = useState(""); //user-confirmed sentiment
+  const [hasConfirmed, setHasConfirmed] = useState(false); //tracks user's confirmation for final sentiment
 
   //calls sentiment analysis api
   const analyzeSentiment = async () =>
@@ -26,6 +27,7 @@ const Sentiment = () =>
       const data = await response.json(); //parse response as JSON
       setSentiment(data.sentiment); //update sentiment
       setUserSentiment(data.sentiment); //default user sentiment to the analyzed sentiment
+      setHasConfirmed(false); //reset for new analysis
     }
     catch(error)
     {
@@ -37,6 +39,8 @@ const Sentiment = () =>
   return (
     <div style={{ padding: "2rem" }}>
       <h1><strong>SENTIMENT ANALYZER</strong></h1>
+
+      {/* poem input */}
       <textarea
         style={{color: "black"}}
         value={poem}
@@ -46,20 +50,40 @@ const Sentiment = () =>
         cols={50}
       />
       <br />
+
+      {/* analyze sentiment button */}
       <button
         onClick={analyzeSentiment}
         style={{ marginTop: "1rem", padding: "0.5rem 1rem" }}
       >
         Analyze Sentiment
       </button>
+
+      {/* display AI-generated sentiment */}
       {sentiment && (
         <div style={{ marginTop: "1rem" }}>
-          Sentiment: <strong>{sentiment}</strong>
+          AI-Identified Sentiment: <strong>{sentiment}</strong>
         </div>
       )}
 
-      {/*allow user to select their own sentiment */}
-      {sentiment && <UserSentimentMenu sentiment={sentiment} userSentiment={userSentiment} setUserSentiment={setUserSentiment} />}
+      {/* allow user to confirm or change sentiment */}
+      {sentiment && (
+        <UserSentimentMenu
+          sentiment={sentiment}
+          userSentiment={userSentiment}
+          setUserSentiment={(newSentiment) => {
+            setUserSentiment(newSentiment);
+            setHasConfirmed(true);
+          }}
+        />
+      )}
+
+      {/* display user-confirmed sentiment after confirmation */}
+      {hasConfirmed && (
+        <div style={{ marginTop: "1rem" }}>
+          <strong>Final Sentiment:</strong> {userSentiment}
+        </div>
+      )}
     </div>
   );
 };
