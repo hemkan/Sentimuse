@@ -1,10 +1,12 @@
 import {useState} from "react";
+import UserSentimentMenu from "../components/userSentimentMenu";
 
 const Sentiment = () =>
 {
   //declare state variables
   const [poem, setPoem] = useState(""); //holds/sets poem
   const [sentiment, setSentiment] = useState(""); //holds/sets sentiment
+  const [userSentiment, setUserSentiment] = useState("");
 
   //calls sentiment analysis api
   const analyzeSentiment = async () =>
@@ -23,6 +25,7 @@ const Sentiment = () =>
 
       const data = await response.json(); //parse response as JSON
       setSentiment(data.sentiment); //update sentiment
+      setUserSentiment(data.sentiment); //default user sentiment to the analyzed sentiment
     }
     catch(error)
     {
@@ -54,8 +57,13 @@ const Sentiment = () =>
           Sentiment: <strong>{sentiment}</strong>
         </div>
       )}
+
+      {/*allow user to select their own sentiment */}
+      {sentiment && <UserSentimentMenu sentiment={sentiment} userSentiment={userSentiment} setUserSentiment={setUserSentiment} />}
     </div>
   );
 };
 
 export default Sentiment;
+
+{/*test with http://localhost:3000/sentiment after "npm run dev"*/}

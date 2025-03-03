@@ -48,7 +48,11 @@ export default async function handler(req, res)
 
         //extract sentiment from response with Optional Chaining
         //assumed to be contained within data.choices.[0].message.content
-        const sentiment = data.choices?.[0]?.message?.content?.trim() || "Unknown";
+        let sentiment = data.choices?.[0]?.message?.content?.trim() || "Unknown";
+        if(sentiment !== "Unknown")
+        {
+            sentiment = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+        }
 
         //return sentiment as JSON
         return res.status(200).json({ sentiment });
