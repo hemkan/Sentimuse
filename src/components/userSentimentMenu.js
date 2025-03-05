@@ -22,16 +22,33 @@ const UserSentimentMenu = ({sentiment, setUserSentiment}) =>
     };
 
     // once final confirmation/proceed button is clicked
-    const handleProceed = () =>
+    const handleProceed = async () =>
     {
-        if (selectedSentiment === "custom")
+        let finalSentiment = selectedSentiment;
+
+        if (selectedSentiment === "custom" && customSentiment.trim() !== "")
         {
-            setUserSentiment(customSentiment || sentiment); // Default to AI sentiment if input is empty
+            try {
+                const response = await fetch("/api/sentimentAnalysisAPI",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ customSentiment: customSentiment })
+                });
+
+                const data = await response.json();
+                finalSentiment = data.sentiment; // Processed sentiment from API
+            }
+            catch (error)
+            {
+                console.error("Error processing custom sentiment:", error);
+                finalSentiment = "Error";
+            }
         }
-        else
-        {
-            setUserSentiment(selectedSentiment);
-        }
+
+        setUserSentiment(finalSentiment);
     };
 
     return (

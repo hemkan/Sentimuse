@@ -9,13 +9,45 @@ export default async function handler(req, res)
     try
     {
         //extract poem from request body through object deconstruction
-        const { poem } = req.body;
-        //console.log(req.body);
+        const { poem, customSentiment } = req.body;
 
-        //return error if there is no text
-        if (!poem)
+        //handling custom sentiment
+        if(customSentiment)
         {
-            return res.status(400).json({ error: "No poem provided" });
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers:
+                {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+                },
+                body: JSON.stringify(
+                {
+                    model: "llama3-8b-8192",
+                    messages: [
+                        { role: "system", content: "You are an AI that simplifies user-inputted sentiment descriptions into a single-word emotion. Use words like 'joy', 'sadness', 'anger', 'calm', etc." },
+                        { role: "user", content: customSentiment },
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 5,
+                }),
+            });
+
+            const data = await response.json();
+
+            //log the full response for debugging
+            //console.log("Groq API response:", JSON.stringify(data));
+
+            //extract sentiment from response with Optional Chaining
+            //assumed to be contained within data.choices.[0].message.content
+            let processedSentiment = data.choices?.[0]?.message?.content?.trim() || "Unknown";
+            //polish final result before returning
+            if(processedSentiment !== "Unknown")
+            {
+                processedSentiment = processedSentiment.charAt(0).toUpperCase() + processedSentiment.slice(1).toLowerCase();
+            }
+
+            return res.status(200).json({ sentiment: processedSentiment });
         }
 
         //make POST request to Groq API
@@ -49,14 +81,17 @@ export default async function handler(req, res)
         //extract sentiment from response with Optional Chaining
         //assumed to be contained within data.choices.[0].message.content
         let sentiment = data.choices?.[0]?.message?.content?.trim() || "Unknown";
+        //polish final result before returning
         if(sentiment !== "Unknown")
         {
-            sentiment = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+            sentiment = sentiment.charAt(0).toUpperCase() + sentiment.slice(1).toLowerCase();
         }
 
         //return sentiment as JSON
         return res.status(200).json({ sentiment });
-    } catch (error) {
+    }
+    catch (error)
+    {
         console.error("Error analyzing sentiment:", error);
         return res.status(500).json({ error: "Failed to analyze sentiment." });
     }
