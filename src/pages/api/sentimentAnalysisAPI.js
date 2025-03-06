@@ -64,7 +64,7 @@ export default async function handler(req, res)
             {
                 model: "llama3-8b-8192",
                 messages: [
-                    { role: "system", content: "You are an AI that classifies the overall sentiment of a poem with a single word. You can use words like 'joy', 'sadness', 'anger', 'calm', etc." },
+                    { role: "system", content: "You are an AI that classifies the overall sentiment of a poem with a single word. You can use words like 'joy', 'sadness', 'anger', 'calm', etc. If the input is unintelligible, simply respond with 'unknown'." },
                     { role: "user", content: poem },
                 ],
                 temperature: 0.7, //conrols consistency of response
