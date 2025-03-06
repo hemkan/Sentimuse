@@ -1,71 +1,66 @@
+// components/MusicSearch.js
 import { useState } from "react";
 
-export default function MusicGenerator() {
-  // State to store user input 
+export default function MusicSearch() {
+  // User prompt
   const [prompt, setPrompt] = useState("");
-
-  // State to store generated music 
-  const [musicURL, setMusicURL] = useState(null);
-
-  // State to handle loading status
+  // Result from the API
+  const [result, setResult] = useState(null);
+  // Loading status and errors
   const [loading, setLoading] = useState(false);
-
-  // State to handle any errors
   const [error, setError] = useState(null);
 
-  // Function to send request to API route
-  const generateMusic = async () => {
-    setLoading(true); 
-    setError(null); // Clear previous errors
+  // Calls the API route
+  const searchMusic = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
-      // Send a POST request to API
-      const response = await fetch("/api/generateMusic", {
+      const response = await fetch("/api/createMusic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }), // Send user input as JSON
+        body: JSON.stringify({ prompt }),
       });
-
-      const data = await response.json(); // Parse response 
-
-      if (response.ok) {
-        setMusicURL(data.music_url); // Save generated music
-      } else {
-        throw new Error(data.error || "Music generation failed"); // Handle API errors
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Music search failed");
       }
+      
+      setResult(data);
     } catch (err) {
-      setError(err.message); // error message
+      setError(err.message);
     }
-
+    
     setLoading(false);
   };
 
   return (
-    <div>
-      <h2>Generate AI Music</h2>
-
-      {/* Input field for user to enter music prompt */}
+    <div className="flex flex-col items-center p-4">
+      <h1 className="text-2xl mb-4">Music Test</h1>
       <input
         type="text"
-        placeholder="Enter music prompt"
+        placeholder="Enter a music prompt..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
+        className="border p-2 rounded w-80"
       />
-
-      {/* Button to trigger API for music generation */}
-      <button onClick={generateMusic} disabled={loading}>
-        {loading ? "Generating..." : "Generate"}
+      <button
+        onClick={searchMusic}
+        disabled={loading}
+        className="mt-5 bg-blue-500 text-white p-2 rounded"
+      >
+        {loading ? "Searching..." : "Search Music"}
       </button>
-
-      {/* Display error message */}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {/* If music is generated, show an audio player (This part wont be implemented just yet)*/}
-      {musicURL && (
-        <div>
-          <p>Generated Music:</p>
-          <audio controls>
-            <source src={musicURL} type="audio/mpeg" />
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {result && (
+        <div className="mt-10 text-center">
+          <p>
+            <strong>{result.title}</strong> by {result.artist}
+          </p>
+          <audio controls className="mt-2">
+            <source src={result.trackUrl} type="audio/mpeg" />
             Your browser does not support the audio element.
           </audio>
         </div>
