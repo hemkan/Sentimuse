@@ -1,25 +1,31 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 
 const Poem = () => {
-  const [poemVerses, setPoemVerses] = useState([]);
-  //const [input, setInput] = useState("");
-  //const [loading, setLoading] = useState(false);
-  //const msgEndRef = useRef<HTMLDivElement>(null);
-
-  const prompt = 'Random';
-  
-  //const scrollToBottom = () => {
-  //  msgEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  //};
+  const [poemLines, setPoemLines] = useState([]);
+  const [input, setInput] = useState("");
+  const [editId, setEditId] = useState(null);
 
   useEffect(() => {
-    handleSubmit;
-  });
-
-
-  const handleSubmit = async () => {
+    // Code we want to run
+    //generatePoem;
+    console.log(poemLines)
+    // Optional return
+  }, [poemLines]); // The dependency array, or what it should listen or react to
+    
+  
+  // Function to regenerate a poem line based on given index
+  const regenerateLine = async (index) => {
     try {
+      const prompt = `Regenerate this line: ${poemLines[index]}`;
+      console.log(prompt);
+
       const response = await fetch ("../api/poemAPI", {
         method: "POST",
         headers: {
@@ -31,13 +37,47 @@ const Poem = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const poem = data.response.split("\n").map((verse) => verse.trim());
+        changeLine(index, data);
+      }
 
-        console.log(poem)
+      else {
+        throw new Error("Could not fetch resource!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
 
-        if (data) {
-          setPoemVerses(poem);
-        }
+  };
+
+// Function to change poem line on client side
+  const changeLine = async (newIndex, data) => {
+    const newLine = data.response;
+    console.log(newLine);
+
+    const newPoem = poemLines.map((line, index) => 
+      index === newIndex ? newLine : line);
+    
+    setPoemLines(newPoem);
+  };
+
+
+
+  // Function to generate the first poem
+  const generatePoem = async () => {
+    try {
+      const prompt = "Random";
+      const response = await fetch ("../api/poemAPI", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({message: prompt}),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        displayPoem(data);
       }
 
       else {
@@ -48,12 +88,74 @@ const Poem = () => {
     }
   };
 
+  // Function to set the index of the editing line and its preview input
+  const editLine = (index) => {
+    setEditId(index);
+    setInput(poemLines[index]);
+  };
+
+  // Function to set the changes the user makes to a line
+  const handleChange = (e) => {
+    setInput(e.target.value);
+  };
+  
+  // Function to listen for the "Enter" key and set the new poem
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      const newPoem = poemLines.map((line, index) =>
+        index === editId ? input : line);
+
+      setPoemLines(newPoem);
+      setEditId(null);
+    }
+  };
+
+  // Function to remove a line from a poem
+  const removeLine = (deleteId) => {
+    const newPoem = poemLines.filter((line, index) => index !== deleteId);
+
+    setPoemLines(newPoem);
+  };
+
+  
+  // Function to display the poem
+  const displayPoem = async (data) => {
+        const poem = data.response.split("\n").filter(line => line.trim() !== "").map(line => line.trim());
+        setPoemLines(poem);
+        return poem;
+  };
+
+
   return (
     <div>
-      <button onClick={handleSubmit}>Click me!</button>
+      <button onClick={generatePoem}>Click me!</button>
       <ul>
-        {poemVerses.map((verse, index) => (
-          <li key={index}>{verse}</li>
+        {poemLines.map((line, index) => (
+          <li>
+            <DropdownMenu>
+                {index + 1}. {editId === index ? (
+                  <input
+                  type="text"
+                  value={input}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  style={{ padding: "5px", fontSize: "16px", color: "red", width: "400px" }}
+                  autoFocus
+                  />
+                ) : (
+                <>
+                  <DropdownMenuTrigger key={index}>
+                  {line}
+                  </DropdownMenuTrigger>
+                </>)}
+                
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => regenerateLine(index)}>Regenerate Line</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => editLine(index)}>Edit Line</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => removeLine(index)} className="text-red-700">Remove Verse</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </li>
         ))}
       </ul>
     </div>

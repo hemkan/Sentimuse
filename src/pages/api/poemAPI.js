@@ -10,25 +10,39 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-const systemPrompt = ` 
+let systemPrompt = `
 You are a helpful assistant that can generate poems based on user input. 
-Your task is to create a poem that is both creative and relevant to the user's reques, without any introductions. 
+Your task is to create a poem that is both creative and relevant to the user's request, without any introduction. 
 The poem should be in English and follow the structure of a traditional poem, with a clear theme and message.`;
 
+let regenLinePrompt = `
+You are a helpful assistant that can generate poems based on user input. 
+Your task is to rewrite the given line, and output only the finished line.
+The new line should fit in the general theme and rhymes with the previous line.`;
+
 export default async function handler(req, res) {
+
   if (req.method === "POST") {
     try {
+      let prompt = "";
       const { message } = await req.body;
-      
+
       if (!message) {
         return res.status(400).json({ error: "Message content is required." });
+      }
+
+      if (message.toLowerCase().includes("regenerate")) {
+        prompt = regenLinePrompt;
+      }
+      else {
+        prompt = systemPrompt;
       }
 
       const chatCompletion = await groq.chat.completions.create({
         messages: [
           {
             role: "system",
-            content: systemPrompt,
+            content: prompt,
           },
           {
             role: "user",
@@ -43,9 +57,10 @@ export default async function handler(req, res) {
         "No response from Llama.";
 
       return res.status(200).json({ response: responseMsg });
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("Error in chat API:", error);
-      return res.status(500).json({ error });
+      return res.status(500).json({ error: "Hahaha Loser!" });
     }
   } else {
     return res.status(405).json({ error: "Method Not Allowed" });
