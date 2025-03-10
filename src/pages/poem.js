@@ -23,7 +23,7 @@ const Poem = () => {
   // Function to regenerate a poem line based on given index
   const regenerateLine = async (index) => {
     try {
-      const prompt = `Regenerate this line: ${poemLines[index]} using the following poem as context:\n${poemLines.join("\n")}`;
+      const prompt = `Regenerate this line "${poemLines[index]}" in the following poem:\n${poemLines.join("\n")}`;
       console.log(prompt);
 
       const response = await fetch ("../api/poemAPI", {
