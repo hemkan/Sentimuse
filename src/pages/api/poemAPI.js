@@ -17,7 +17,7 @@ The poem must be in English and follow the structure of a traditional poem, with
 
 let regenLinePrompt = `
 You are a helpful assistant that can generate poems, using the user's prompt as the title.
-Your task is to create a different line to replace the given line, and output the new line only, without any introduction.
+Your task is to replace the given line with a different line, and output the new line only, without any introduction.
 The new line must fit in with the theme of the poem and rhymes with the changed line on the last word.`;
 
 export default async function handler(req, res) {
