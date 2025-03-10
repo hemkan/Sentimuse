@@ -23,7 +23,7 @@ const Poem = () => {
   // Function to regenerate a poem line based on given index
   const regenerateLine = async (index) => {
     try {
-      const prompt = `Regenerate this line: ${poemLines[index]}`;
+      const prompt = `Regenerate this line: ${poemLines[index]} using the following poem as context:\n${poemLines.join("\n")}`;
       console.log(prompt);
 
       const response = await fetch ("../api/poemAPI", {
@@ -61,11 +61,31 @@ const Poem = () => {
   };
 
 
+  //Function to pick a random topic i.e., an entry from the Marriam-Webster dictionary
+  async function pickTopic() {
+    try {
+      const response = await fetch('/Marriam-Webster Dictionary.txt');
+
+      if (response.ok) {
+        const topicList = (await response.text()).split("\n");
+        const extractedTopics = topicList.map(topic => topic.replace(/^\d+\.\s*/, ''));
+
+        const randomNum = Math.floor(Math.random() * extractedTopics.length);
+        let topic = extractedTopics[randomNum];
+        console.log(topic);
+        return topic;
+      }
+    }
+    catch (error) {
+      console.log("Something wrong fetching the dictionary:", error);
+    }
+  };
+
 
   // Function to generate the first poem
   const generatePoem = async () => {
     try {
-      const prompt = "Random";
+      const prompt = (await pickTopic()).toString();
       const response = await fetch ("../api/poemAPI", {
         method: "POST",
         headers: {

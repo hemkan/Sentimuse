@@ -13,12 +13,12 @@ const groq = new Groq({
 let systemPrompt = `
 You are a helpful assistant that can generate poems based on user input. 
 Your task is to create a poem that is both creative and relevant to the user's request, without any introduction. 
-The poem should be in English and follow the structure of a traditional poem, with a clear theme and message.`;
+The poem must be in English and follow the structure of a traditional poem, with a clear theme and message.`;
 
 let regenLinePrompt = `
 You are a helpful assistant that can generate poems based on user input. 
-Your task is to rewrite the given line, and output only the finished line.
-The new line should fit in the general theme and rhymes with the previous line.`;
+Your task is to rewrite the given line, using the given sample poem as context, and output the finished line, without any introduction.
+The new line must fit in the general theme and rhymes with the previous line.`;
 
 export default async function handler(req, res) {
 
