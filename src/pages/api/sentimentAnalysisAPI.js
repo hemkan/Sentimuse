@@ -25,7 +25,7 @@ export default async function handler(req, res)
                 {
                     model: "llama3-8b-8192",
                     messages: [
-                        { role: "system", content: "You are an AI that simplifies user-inputted sentiment descriptions into a single-word emotion. Use words like 'joy', 'sadness', 'anger', 'calm', etc." },
+                        { role: "system", content: "You are an AI that simplifies user-inputted sentiment descriptions into a single-word emotion. Use words like 'joy', 'sadness', 'anger', 'calm', etc. If the input is unintelligible, simply respond with 'unknown'." },
                         { role: "user", content: customSentiment },
                     ],
                     temperature: 0.7,

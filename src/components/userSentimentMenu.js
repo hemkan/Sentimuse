@@ -11,7 +11,8 @@ const UserSentimentMenu = ({sentiment, setUserSentiment}) =>
       (option) => option.toLowerCase() !== sentiment.toLowerCase()
     );
 
-    const dropdownChange = (e) => {
+    const dropdownChange = (e) =>
+    {
         const selectedValue = e.target.value;
         setSelectedSentiment(selectedValue);
 
@@ -62,7 +63,10 @@ const UserSentimentMenu = ({sentiment, setUserSentiment}) =>
                 onChange={dropdownChange}
                 style={{ marginLeft: "1rem", color: "black" }}
             >
+                {/* only adds AI sentiment to dropdown menu if valid*/}
+                {sentiment !== "Unknown" &&
                 <option value={sentiment}>{sentiment}</option>
+                }
                 {sentimentOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
                 ))}
