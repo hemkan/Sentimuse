@@ -44,7 +44,7 @@ export default function MusicSearch() {
         placeholder="Enter a music prompt..."
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        className="border p-2 rounded w-80"
+        className="border p-2 rounded w-80 text-black"
       />
       <button
         onClick={searchMusic}
