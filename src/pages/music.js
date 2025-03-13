@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 export default function MusicSearch() {
+  /*
   // User prompt
   const [prompt, setPrompt] = useState("");
   // Result from the API
@@ -35,36 +36,16 @@ export default function MusicSearch() {
     
     setLoading(false);
   };
-
+*/
   return (
-    <div className="flex flex-col items-center p-4">
-      <h1 className="text-2xl mb-4">Music Test</h1>
-      <input
-        type="text"
-        placeholder="Enter a music prompt..."
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        className="border p-2 rounded w-80 text-black"
-      />
-      <button
-        onClick={searchMusic}
-        disabled={loading}
-        className="mt-5 bg-blue-500 text-white p-2 rounded"
-      >
-        {loading ? "Searching..." : "Search Music"}
-      </button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      {result && (
-        <div className="mt-10 text-center">
-          <p>
-            <strong>{result.title}</strong> by {result.artist}
-          </p>
-          <audio controls className="mt-2">
-            <source src={result.trackUrl} type="audio/mpeg" />
-            Your browser does not support the audio element.
-          </audio>
-        </div>
-      )}
+    <div className="flex flex-col items-center font-bold scale-125">
+      <h1 className="text-4xl mb-4">Choose your Music</h1>
+      <button className="w-96 m-5 bg-blue-600 hover:bg-blue-900 text-white font-medium p-2 rounded">No Music</button>
+      <p className="font-light text-gray-400 text-xs">Select this is if you prefer no background msuic.</p>
+      <button className="w-96 m-5 bg-blue-600 hover:bg-blue-900 text-white font-medium p-2 rounded">Upload Music File</button>
+      <p className="font-light text-gray-400 text-xs">Upload your own background music.</p>
+      <button className="w-96 m-5 bg-blue-600 hover:bg-blue-900 text-white font-medium p-2 rounded">Generate Music with Sentiment</button>
+      <p className="font-light text-gray-400 text-xs">Automatically generate background music based on sentiment analysis.</p>
     </div>
   );
 }
