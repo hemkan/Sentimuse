@@ -38,7 +38,7 @@ export default function MusicSearch() {
   };
 */
   return (
-    <div className="flex flex-col items-center font-bold scale-125">
+    <div className="flex flex-col items-center font-bold scale-[1.4]">
       <h1 className="text-4xl mb-4">Choose your Music</h1>
       <button className="w-96 m-5 bg-blue-600 hover:bg-blue-900 text-white font-medium p-2 rounded">No Music</button>
       <p className="font-light text-gray-400 text-xs">Select this is if you prefer no background msuic.</p>
