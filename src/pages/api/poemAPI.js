@@ -10,15 +10,16 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-let systemPrompt = `
-You are a helpful assistant that can generate poems based on the user's input prompt. 
-Your task is to create a poem that is both creative and relevant to the user's prompt, without any introduction. 
-The poem must be in English and follow the structure of a traditional poem, with a clear theme and message.`;
+let systemPrompt = `You are a great poet who can write poems of any topics and structures, such as ballad, sonnet, limerick and free verse.
+Your job is to write a poem, using the user's input as its title.
+You must print out the poem ONLY, and nothing else.
+The poem must be creative and relevant to the title, with a clear theme and message.`;
 
-let regenLinePrompt = `
-You are a helpful assistant that can generate poems, using the user's prompt as the title.
-Your task is to replace the given line with a different line, and output the new line only, without any introduction.
-The new line must fit in with the theme of the poem and rhymes with the changed line on the last word.`;
+let regenLinePrompt = `You are a great poet who can write poems of any topics and structures.
+You are to rhyme the given verse with a new one, using the poem as context, without any introduction or preamble.
+The new verse must RHYME with the given verse on the LAST WORD, while being relevant to the poem
+The new verse must NOT repeat any part of the given verse, and must be grammatically correct.
+You must output a SINGLE verse ONLY`;
 
 export default async function handler(req, res) {
 
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Message content is required." });
       }
 
-      if (message.toLowerCase().includes("regenerate")) {
+      if (message.toLowerCase().includes("rhyme")) {
         prompt = regenLinePrompt;
       }
       else {
