@@ -4,7 +4,7 @@ export default function AudioBox(){
             <div className="w-full text-white text-[40px] font-[400] font-[Inria Sans] ">
                 Set the Rhythm
             </div>
-            <div className=" h-[40%] gap-10 w-full flex flex-row justify-center items-center">
+            <div className=" h-[40%] gap-8 w-full flex flex-row justify-center items-center">
                 <div style={{width: '30%', height: '80%', background: '#3A141E', borderRadius: 20}} />
                 <div style={{width: '30%', height: '80%', background: '#3A141E', borderRadius: 20}} />
                 <div style={{width: '30%', height: '80%', background: '#3A141E', borderRadius: 20}} />
