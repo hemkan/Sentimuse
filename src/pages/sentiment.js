@@ -4,13 +4,13 @@ const Sentiment = () =>
 {
   const [poem, setPoem] = useState("");
   const [aiSentiment, setAISentiment] = useState("");
-  const [selectedSentiment, setSelectedSentiment] = useState("");
   const [customSentiment, setCustomSentiment] = useState("");
   const [processedSentiment, setProcessedSentiment] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-
+  const [selectedPane, setSelectedPane] = useState(null);
   const sentimentOptions = ["Joy", "Sadness", "Anger", "Calm", "Love", "Fear", "Surprise"];
 
+  //detect sentiment of poem
   const analyzeSentiment = async () =>
   {
     try
@@ -24,15 +24,17 @@ const Sentiment = () =>
 
         const data = await response.json();
         setAISentiment(data.sentiment);
-        setSelectedSentiment(data.sentiment); //default to AI-generated sentiment
+        setSelectedPane({ type: "AI" }); //default to AI-generated sentiment
     }
     catch (error)
     {
         console.error("Error analyzing sentiment:", error);
-        setAISentiment("Error analyzing sentiment");
+        setAISentiment("Error");
+        setSelectedPane({ type: "AI" });
     }
   };
 
+  //process custom sentiment into single word
   const processCustomSentiment = async () =>
   {
     if (!customSentiment.trim()) return;
@@ -49,13 +51,13 @@ const Sentiment = () =>
 
         const data = await response.json();
         setProcessedSentiment(data.sentiment);
-        setSelectedSentiment(data.sentiment);
+        setSelectedPane({ type: "custom" });
     }
     catch (error)
     {
         console.error("Error processing sentiment:", error);
         setProcessedSentiment("Error");
-        setSelectedSentiment(data.sentiment);
+        setSelectedPane({ type: "custom" });
     }
     finally
     {
@@ -63,20 +65,41 @@ const Sentiment = () =>
     }
   };
 
-  //handles clicking a pane
-  const selectPane = (paneType) =>
+  //use selected pane to determine user's selection
+  const getFinalSentiment = () =>
   {
-    setSelectedSentiment(paneType);
-  };
+    if(!selectedPane)
+    {
+      return "";
+    }
+
+    if(selectedPane.type === "AI")
+    {
+      return aiSentiment;
+    }
+    else if(selectedPane.type === "predefined")
+    {
+      return selectedPane.value;
+    }
+    else if(selectedPane.type === "custom")
+    {
+      return processedSentiment;
+    }
+
+    return "";
+  }
 
   //handles "Next" button click
   const handleProceed = () =>
   {
-    alert(`Proceeding with sentiment: ${selectedSentiment}`);
-    console.log("Final Sentiment:", selectedSentiment);
+    const final = getFinalSentiment();
+    alert(`Proceeding with sentiment: ${final}`);
+    console.log("Final Sentiment:", final);
   };
 
-  const isSelected = !!selectedSentiment;
+  const isSelected = !!selectedPane;
+  //remove AI-detected sentiment if its in predefined sentiment list
+  const filteredOptions = sentimentOptions.filter((option) => option !== aiSentiment);
 
   return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -100,17 +123,17 @@ const Sentiment = () =>
               Analyze Sentiment
           </button>
 
-          {/* Only show the 3-pane layout if we have an AI sentiment */}
+          {/* only show panes if poem was processed */}
           {aiSentiment && (
             <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "2rem" }}>
 
-              {/* 1) AI-Detected Sentiment Pane */}
+              {/* pane 1: AI-detected sentiment */}
               <div
-                onClick={() => selectPane(aiSentiment)}
+                onClick={() => setSelectedPane({ type: "AI" })}
                 style={{
                   flex: 1,
                   padding: "1rem",
-                  border: selectedSentiment === aiSentiment ? "4px solid green": "2px solid gray",
+                  border: selectedPane?.type === "AI" ? "4px solid green": "2px solid gray",
                   borderRadius: "8px",
                   minHeight: "150px",
                   backgroundColor: "black",
@@ -118,79 +141,95 @@ const Sentiment = () =>
                   position: "relative"
                 }}
               >
-                <h3>AI Sentiment</h3>
-                <p><strong>{aiSentiment}</strong></p>
-                {selectedSentiment === aiSentiment && (
+                <h1>Your poem evokes feelings of...</h1>
+                <p style={{padding: "10rem", fontSize: "50px"}}><strong>{aiSentiment}</strong></p>
+                {/* checkmark if selected */}
+                {selectedPane?.type === "AI" && (
                   <span style={{ position: "absolute", top: "5px", right: "10px", fontSize: "20px" }}>
                     ✔
                   </span>
                 )}
               </div>
 
-              {/* 2) Predefined Emotions Pane */}
-              <div
-                style={{
-                  flex: 1, padding: "1rem", border: "2px solid gray", borderRadius: "8px",
-                  minHeight: "150px"
-                }}
-              >
-                <h3>Predefined Emotions</h3>
-                {sentimentOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => selectPane(option)}
-                    style={{
-                      display: "block",
-                      margin: "5px auto",
-                      padding: "0.5rem 1rem",
-                      backgroundColor: "black",
-                      color: "white",
-                      border: selectedSentiment === option ? "4px solid green": "2px solid gray",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      position: "relative",
-                      width: "80%",
-                      marginTop: "0.3rem"
-                    }}
-                  >
-                    {option}
-                    {selectedSentiment === option && (
-                      <span style={{ position: "absolute", top: "5px", right: "10px", fontSize: "16px" }}>
-                        ✔
-                      </span>
-                    )}
-                  </button>
-                ))}
+              {/* pane 2: predefined sentiment list */}
+              <div style={{
+                flex: 1,
+                padding: "1rem",
+                border: selectedPane?.type === "predefined" ? "4px solid green" : "2px solid gray",
+                borderRadius: "8px",
+                minHeight: "150px",
+                backgroundColor: "black"
+              }}>
+                <h3>Select a Different Sentiment:</h3>
+                <p style={{padding: "1rem"}}></p>
+                {filteredOptions.map((option) =>
+                {
+                  const isThisSelected = selectedPane?.type === "predefined" && selectedPane.value === option;
+
+                  return (
+                    <strong><button
+                      key={option}
+                      onClick={() => setSelectedPane({ type: "predefined", value: option })}
+                      style={{
+                        display: "block",
+                        margin: "5px auto",
+                        padding: "0.5rem 1rem",
+                        backgroundColor: "black",
+                        color: "white",
+                        border: isThisSelected ? "4px solid green" : "1px solid white",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        position: "relative",
+                        width: "80%",
+                        marginTop: "0.3rem"
+                      }}
+                    >
+                      {option}
+                      {isThisSelected && (
+                        <span style={{
+                          position: "absolute",
+                          top: "5px",
+                          right: "10px",
+                          fontSize: "16px"
+                        }}>
+                          ✔
+                        </span>
+                      )}
+                    </button></strong>
+                  );
+                })}
               </div>
 
-              {/* 3) Custom Input Pane */}
+              {/* pane 3: custom sentiment pane */}
               <div
                 style={{
                   flex: 1,
                   padding: "1rem",
-                  border: selectedSentiment === (processedSentiment || "") ? "4px solid green": "2px solid gray",
+                  border: selectedPane?.type === "custom" ? "2px solid green" : "2px solid gray",
                   borderRadius: "8px",
                   minHeight: "150px",
                   position: "relative",
-                  backgroundColor: "black",
-                  cursor: "default"
+                  backgroundColor: "black"
                 }}
+                //user can click if processed sentiment exists
                 onClick={() => {
-                  // Only select the custom pane if there's a processed sentiment
-                  if (processedSentiment) selectPane(processedSentiment);
+                  if (processedSentiment)
+                  {
+                    setSelectedPane({ type: "custom" });
+                  }
                 }}
               >
-                <h3>Custom Sentiment</h3>
+                <h3>Enter Your Own Sentiment:</h3>
                 <textarea
                   value={customSentiment}
                   onChange={(e) => setCustomSentiment(e.target.value)}
-                  placeholder="Type your own sentiment..."
+                  placeholder="Type here..."
                   style={{
                     width: "90%",
                     height: "50px",
                     padding: "0.5rem",
                     borderRadius: "5px",
-                    border: "1px solid black",
+                    border: "1px solid white",
                     resize: "none",
                     color: "black"
                   }}
@@ -203,25 +242,32 @@ const Sentiment = () =>
                   style={{
                     marginTop: "0.5rem",
                     padding: "0.5rem 1rem",
-                    backgroundColor: "gray",
+                    backgroundColor: "green",
                     color: "white",
                     border: "none",
                     borderRadius: "5px",
                     cursor: "pointer"
                   }}
                 >
-                  {isProcessing ? "Processing..." : "Submit"}
+                  {isProcessing ? "Processing..." : "Submit"} {/*show "processing" while input is processing */}
                 </button>
 
-                {/* Show processed custom sentiment below */}
+                {/* show processed user input result */}
                 {processedSentiment && (
                   <div style={{ marginTop: "1rem", color: "white" }}>
-                    <strong>Processed Sentiment:</strong> {processedSentiment}
+                    Processed Sentiment:
+                    <p style={{ fontSize: "50px"}}><strong>{processedSentiment}</strong></p>
                   </div>
                 )}
 
-                {selectedSentiment === processedSentiment && (
-                  <span style={{ position: "absolute", top: "5px", right: "10px", fontSize: "20px" }}>
+                {/* checkmark if pane is selected */}
+                {selectedPane?.type === "custom" && (
+                  <span style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "10px",
+                    fontSize: "20px"
+                  }}>
                     ✔
                   </span>
                 )}
@@ -229,32 +275,35 @@ const Sentiment = () =>
             </div>
           )}
 
-          {/* Show selected sentiment above the Next button */}
+          {/* display final sentiment that will be used going forward */}
           {isSelected && (
             <div style={{ marginTop: "1rem", fontSize: "1.2rem", color: "white" }}>
-              <strong>Selected Sentiment:</strong> {selectedSentiment}
+              Proceed with: <strong>{getFinalSentiment()}</strong>
             </div>
           )}
 
-          {/* Next Button */}
+          {/* next button, enabled only if a pane is selected */}
           {isSelected && (
             <button
               onClick={handleProceed}
+              disabled={getFinalSentiment() === "Unknown"}
               style={{
                 marginTop: "2rem",
                 padding: "0.75rem 1.5rem",
-                backgroundColor: "gray",
+                backgroundColor: getFinalSentiment() === "Unknown" ? "gray" : "green",
                 color: "white",
                 border: "none",
                 borderRadius: "5px",
-                cursor: "pointer",
+                cursor: getFinalSentiment() === "Unknown" ? "not-allowed" : "pointer"
               }}
             >
               Next
             </button>
           )}
         </div>
-  );
+      );
 }
 
 export default Sentiment;
+
+/*"npm run dev" + http://localhost:3000/sentiment */
