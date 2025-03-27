@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export default function Home() {
   return (
-    <div className="min-h-screen w-screen flex items-center justify-center">
+    <div className="min-h-screen w-screen">
       <Music/>
     </div>
   );
