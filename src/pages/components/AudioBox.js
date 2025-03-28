@@ -13,8 +13,7 @@ export default function AudioBox(){
                 <div className="flex items-center justify-center w-[25%] h-[80%] bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539]"><AudioIcon /></div>
                 <div className="flex items-center justify-center w-[25%] h-[80%] bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539]"><AudioIcon /></div>
             </div>
-            <div className="text-center justify-center text-white text-2xl font-normal font-['Inria_Sans']">+ Add your own</div>
-            <div button className="flex flex-col flex-end items-end w-full"><button className="text-2xl h-full">Next</button></div>
+            <div className="text-center justify-center text-white text-3xl font-normal font-['Inria_Sans']">+ Add your own</div>
             <NextButton />
         </div>
     );
