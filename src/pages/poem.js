@@ -1,17 +1,33 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import EditorPage from "./poemEditorPage";
+import { createContext } from "react";
+import { Button } from "@/components/ui/button";
+
+
+
+export const PoemContext = createContext();
+
 
 
 const Poem = () => {
   const [poemLines, setPoemLines] = useState([]);
   // const [input, setInput] = useState("");
   // const [editId, setEditId] = useState(null);
-  
+  const [pageTitle, setPageTitle] = useState("Create your Poem");
+  const [buttonVisible, setButtonVisible] = useState(true);
+  const [editorPage, setEditorPage] = useState(false);
+
+
+
+
   const router = useRouter();
 
   useEffect(() => {
     // Code we want to run
-    // console.log(poemLines)
+    console.log(poemLines)
     // Optional return
   }, [poemLines]); // The dependency array, or what it should listen or react to
   
@@ -95,7 +111,7 @@ const Poem = () => {
       if (response.ok) {
         const data = await response.json();
         displayPoem(data);
-        router.push("./poemEditorPage");
+        //router.push("./poemEditorPage");
       }
 
       else {
@@ -149,6 +165,8 @@ const Poem = () => {
     saveData(100, poem);
   };
 
+
+
   return (
     <div className="bg-black">
       {/* Nav bar */}
@@ -159,20 +177,62 @@ const Poem = () => {
       <main className="place-items-center pb-[100px] pt-[100px]">
         <div>
           {/* Title */}
-          <h2 className="text-5xl pb-[35px] font-light">Create Your Poem</h2>
+          <h2 className="text-5xl pb-[35px] font-light">{pageTitle}</h2>
           {/* Main buttons */}
-          <div className="flex items-center justify-between gap-[40px] mb-[50px]">
+          <div className={editorPage ? 'flex flex-col' : 'flex items-center justify-between gap-[40px] mb-[50px]'}>
+
+          {buttonVisible && (
             <button
-            onClick={generatePoem}
+            onClick={() => {
+              generatePoem();
+              setPageTitle("Enhance your Poem");
+              setButtonVisible(false);
+              setEditorPage(true);
+            }} 
             className="rounded-[20px] p-[40px] w-[375px] h-[375px] bg-[#3A141E] hover:bg-[#351E29] transition delay-100 ease-in-out">
               <h3 className="text-4xl font-semibold mb-3">Create with AI</h3>
               <p>Let AI generate a poem for you</p>
             </button>
-            <button 
+          )}
+
+          {buttonVisible && (
+            <button
+            onClick={() => {
+              if (poemLines.length !== 0) {
+                setPoemLines([]);
+              }
+              setPageTitle("Enhance your Poem");
+              setButtonVisible(false);
+              setEditorPage(true);
+            }}
             className="rounded-[20px] p-[40px] w-[375px] h-[375px] bg-[#3A141E] hover:bg-[#351E29] transition delay-100 ease-in-out">
               <h3 className="text-4xl font-semibold mb-3">Create your Own</h3>
               <p>Write your poem with full creative control</p>
             </button>
+          )}
+
+          {editorPage && (
+            <PoemContext.Provider value={poemLines}>
+              <EditorPage/>
+              <div className="flex justify-between">
+
+              {/* Back button */}
+              <Button
+              onClick = {() => {
+                setPageTitle("Create your Poem");
+                setButtonVisible(true);
+                setEditorPage(false);
+              }} 
+              className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Back</Button>
+
+              {/* Next button */}
+              <Button className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Next</Button>
+              </div>
+              
+            </PoemContext.Provider>
+          )}
+
+            
           </div>
         </div>
       </main>

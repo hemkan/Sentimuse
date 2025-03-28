@@ -54,6 +54,19 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		keyframes: {
+  			'slide': {
+  				from: {
+  					'transform': 'translateX(100%)'
+  				},
+  				to: {
+  					'transform': 'translateX(0%)'
+  				}
+  			}
+  		},
+  		animation: {
+  			'slide': 'slide 750ms ease-in-out'
   		}
   	}
   },
