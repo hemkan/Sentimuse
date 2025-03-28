@@ -5,7 +5,7 @@ import AudioBox from './components/AudioBox';
 import NextButton from './components/NextButton';
 
 export default function MusicSearch() {
-  /*
+  
   // User prompt
   const [prompt, setPrompt] = useState("");
   // Result from the API
@@ -39,7 +39,7 @@ export default function MusicSearch() {
     
     setLoading(false);
   };
-*/
+
   return (
     <div>
       <MainHeader />
@@ -49,3 +49,4 @@ export default function MusicSearch() {
     </div>
   );
 }
+
