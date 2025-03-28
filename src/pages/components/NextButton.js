@@ -1,7 +1,8 @@
 export default function NextButton(){
 
     return (
-        <div style={{width: '100%', height: '100%', textAlign: 'center', justifyContent: 'center', display: 'flex', flexDirection: 'column', 
-        color: 'white', fontSize: 24, fontFamily: 'Inria Sans', fontWeight: '400', wordWrap: 'break-word'}}>Next</div>
+        <div button className="flex flex-col flex-end items-end w-full">
+            <button className="w-[250px] h-[51px] bg-[#EC5A72] rounded-[25px] text-2xl h-full">Next</button>
+        </div>
     );
 }
