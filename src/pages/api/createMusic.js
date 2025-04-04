@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
   try {
     // Jamendo API endpoint to fetch tracks
-    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=jsonpretty&limit=1&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
+    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=jsonpretty&limit=1&vocalinstrumental&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
     
     // GET request to the Jamendo API
     const response = await fetch(jamendoUrl);
@@ -30,10 +30,8 @@ export default async function handler(req, res) {
 
     // Return the track URL and additional metadata
     return res.status(200).json({
-      trackUrl: track.audio,
+      trackUrl: track.audio
       // THESE WILL PROBABLY BE UNECESSARY, BUT ILL KEEP FOR NOW
-      title: track.name,
-      artist: track.artist_name,
     });
   } catch (error) {
     console.error("Jamendo API Error:", error);
