@@ -4,7 +4,7 @@ import MainHeader from './components/Header';
 import AudioBox from './components/AudioBox';
 import NextButton from './components/NextButton';
 
-export default function MusicSearch() {
+export default function Music() {
   
   // User prompt
   const [prompt, setPrompt] = useState("");
@@ -41,12 +41,12 @@ export default function MusicSearch() {
   };
 
   return (
-    <div>
+    <>
       <MainHeader />
       <div className="w-scren h-[calc(100vh-132px)] flex flex-col items-center justify-center">
         <AudioBox />
       </div>
-    </div>
+    </>
   );
 }
 
