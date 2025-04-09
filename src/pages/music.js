@@ -1,50 +1,49 @@
 // components/MusicSearch.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MainHeader from './components/Header'; 
 import AudioBox from './components/AudioBox';
 import NextButton from './components/NextButton';
 
 export default function Music() {
   
-  // User prompt
-  const [prompt, setPrompt] = useState("");
-  // Result from the API
-  const [result, setResult] = useState(null);
-  // Loading status and errors
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
 
-  // Calls the API route
-  const searchMusic = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
+  useEffect(() => { 
+      fetchTracks(); // call promise
+  }, []); 
+
+  const fetchTracks = async () => {
+    const query = "vaporwave (instrumental)";
+    if (!query.trim()) return;
 
     try {
       const response = await fetch("/api/createMusic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: query }),
       });
+
       const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || "Music search failed");
+      if (data.tracks) {
+        setSearchResults(data.tracks.slice(0, 4));
+        console.log(searchResults);
+      } else {
+        setSearchResults([]);
       }
-      
-      setResult(data);
     } catch (err) {
-      setError(err.message);
+      console.error("Search error:", err);
+      setSearchResults([]);
     }
-    
-    setLoading(false);
   };
+
+
 
   return (
     <>
       <MainHeader />
       <div className="w-scren h-[calc(100vh-132px)] flex flex-col items-center justify-center">
-        <AudioBox />
+        {/*Pass the returned array as props*/}
+        <AudioBox tracks={searchResults}/>
       </div>
     </>
   );

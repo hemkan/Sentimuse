@@ -1,7 +1,8 @@
 import { useRef, useState } from "react";
 import NextButton from "./NextButton";
+import { play } from "elevenlabs";
 
-export default function AudioBox() {
+export default function AudioBox({tracks: tracks}) {
 
     // Reference for custom audio element
     const audioRef = useRef(null);
@@ -9,22 +10,17 @@ export default function AudioBox() {
     const [audioSrc, setAudioSrc] = useState(null);
     // State toggle for audio controls
     const [isPlaying, setIsPlaying] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
-
+    // State toggle for custom button
+    const [customTrack, setCustomTrack] = useState(false);
 
   // Toggle audio playback and update play state
-    const toggleAudio = () => {
-        if (!audioRef.current) return;
+    const playAudio = (url) => {
+        setAudioSrc(url);
 
-        // Toggle play/pause
-        // NOTE: Instead of toggle, might just press play again
-        if (isPlaying) {
-            audioRef.current.pause(); 
-        } else {
-            audioRef.current.play();
-        }
+        if (!audioRef.current || !url) return;
 
+        audioRef.current.play();
+        
         setIsPlaying(!isPlaying); // update state
     };
 
@@ -37,6 +33,7 @@ export default function AudioBox() {
             const url = URL.createObjectURL(file); // set file as URL
             setAudioSrc(url); // update state to store URL
             setIsPlaying(false); // update state in case for new files
+            setCustomTrack(true);
         }
     };
 
@@ -46,55 +43,18 @@ export default function AudioBox() {
             Set the Rhythm
             </div>
             <div className="h-[30%] gap-8 mb-8 w-full flex flex-col lg:flex-row justify-center items-center">
-            <form
-                onSubmit={async (e) => {
-                    e.preventDefault();
-                    if (!searchQuery.trim()) return;
-
-                    try {
-                    const response = await fetch("/api/createMusic", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ prompt: searchQuery }),
-                    });
-
-                    const data = await response.json();
-                    if (data.tracks) {
-                        setSearchResults(data.tracks.slice(0, 4)); // only take top 4
-                    } else {
-                        setSearchResults([]);
-                    }
-                    } catch (err) {
-                        console.error("Search error:", err);
-                        setSearchResults([]);
-                    }
-                }}
-                className="mb-6 flex items-center gap-4 w-full justify-center"
-                >
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search for music..."
-                    className="px-4 py-2 text-black rounded-xl w-[60%]"
-                />
-                <button type="submit" className="bg-[#6F2539] text-white px-4 py-2 rounded-xl hover:bg-[#883447]">
-                    Search
-                </button>
-                </form>
-
             {/* Maybe add a numbering system for each page? */}
             {/* WILL MAP ITEMS TO ARRAY THAT IS GENERATED WHEN API RETURNS ARRAY, USE LAZY LOADING WITH PAGINATION */}
-            {searchResults.map((track, idx) => (
+            {tracks.map((track, idx) => (
                 <AudioItem key={idx} track={track} />
                 ))}
 
-            </div>
+        </div>
 
             {/* Show the Custom button only if an audio file is uploaded */}
-        {audioSrc && (
+        {customTrack && (
             <button
-                onClick={toggleAudio}
+                onClick={() => playAudio}
                 style={isPlaying ? { outline: "2px solid #B3445A" } : {}}
                 className="flex flex-row items-center justify-center gap-2 w-full h-16 mb-7 py-9 bg-[#3A141E] 
                 text-3xl rounded-[30px] shadow-lg hover:bg-[#6F2539] ease-in duration-65"
@@ -155,15 +115,14 @@ export default function AudioBox() {
     }
     
     function AudioItem({ track }) {
-        const playTrack = () => {
-          if (!track?.url) return;
-          setAudioSrc(track.url);
-          setIsPlaying(false); // Reset to allow replay
-        };
-      
         return (
           <button
-            onClick={playTrack}
+            onClick={() => playAudio(track.url)}
+            style={
+                audioSrc && audioSrc === track.url
+                  ? { outline: "2px solid #B3445A" }  // Apply style only to the current track
+                  : {}
+              }
             className="flex flex-col items-center justify-center w-full h-full p-4 bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg"
           >
             <AudioIcon />
