@@ -1,37 +1,29 @@
-export default async function handler(req, res) {
-  // Only allow POST requests
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
+// pages/api/search-tracks.js
 
-  // Extract the prompt 
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method Not Allowed" });
+
   const { prompt } = req.body;
-  
-  // Validate prompt
-  if (!prompt) {
-    return res.status(400).json({ error: "No prompt provided" });
-  }
+  if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
   try {
-    // Jamendo API endpoint to fetch tracks
-    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=jsonpretty&limit=1&vocalinstrumental&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
-    
-    // GET request to the Jamendo API
+    //MAP THE KEY WORD (INSTRUMENTAL) AT THE END OF QUERIES
+    // Maybe the solution could be the sentiment analysis deciding on a genre and then querying that genre with the tag (instrumental) instead? 
+    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=json&limit=4&vocalinstrumental&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
+
     const response = await fetch(jamendoUrl);
     const data = await response.json();
 
-    // Check if a track was returned
     if (!data.results || data.results.length === 0) {
       return res.status(404).json({ error: "No tracks found" });
     }
 
-    // Select the first track
-    const track = data.results[0];
-
-    // Return the track URL and additional metadata
     return res.status(200).json({
-      trackUrl: track.audio
-      // THESE WILL PROBABLY BE UNECESSARY, BUT ILL KEEP FOR NOW
+      tracks: data.results.map((track) => ({
+        title: track.name,
+        artist: track.artist_name,
+        url: track.audio,
+      })),
     });
   } catch (error) {
     console.error("Jamendo API Error:", error);

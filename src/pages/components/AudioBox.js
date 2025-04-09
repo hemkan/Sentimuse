@@ -9,6 +9,9 @@ export default function AudioBox() {
     const [audioSrc, setAudioSrc] = useState(null);
     // State toggle for audio controls
     const [isPlaying, setIsPlaying] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+
 
   // Toggle audio playback and update play state
     const toggleAudio = () => {
@@ -43,12 +46,49 @@ export default function AudioBox() {
             Set the Rhythm
             </div>
             <div className="h-[30%] gap-8 mb-8 w-full flex flex-col lg:flex-row justify-center items-center">
+            <form
+                onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!searchQuery.trim()) return;
+
+                    try {
+                    const response = await fetch("/api/createMusic", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ prompt: searchQuery }),
+                    });
+
+                    const data = await response.json();
+                    if (data.tracks) {
+                        setSearchResults(data.tracks.slice(0, 4)); // only take top 4
+                    } else {
+                        setSearchResults([]);
+                    }
+                    } catch (err) {
+                        console.error("Search error:", err);
+                        setSearchResults([]);
+                    }
+                }}
+                className="mb-6 flex items-center gap-4 w-full justify-center"
+                >
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for music..."
+                    className="px-4 py-2 text-black rounded-xl w-[60%]"
+                />
+                <button type="submit" className="bg-[#6F2539] text-white px-4 py-2 rounded-xl hover:bg-[#883447]">
+                    Search
+                </button>
+                </form>
+
             {/* Maybe add a numbering system for each page? */}
             {/* WILL MAP ITEMS TO ARRAY THAT IS GENERATED WHEN API RETURNS ARRAY, USE LAZY LOADING WITH PAGINATION */}
-                <AudioItem />
-                <AudioItem />
-                <AudioItem />
-                <AudioItem />
+            {searchResults.map((track, idx) => (
+                <AudioItem key={idx} track={track} />
+                ))}
+
             </div>
 
             {/* Show the Custom button only if an audio file is uploaded */}
@@ -114,12 +154,26 @@ export default function AudioBox() {
         );
     }
     
-    function AudioItem() {
+    function AudioItem({ track }) {
+        const playTrack = () => {
+          if (!track?.url) return;
+          setAudioSrc(track.url);
+          setIsPlaying(false); // Reset to allow replay
+        };
+      
         return (
-            <button 
-                className="flex items-center justify-center w-full h-full bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg">
-                <AudioIcon />
-            </button> 
+          <button
+            onClick={playTrack}
+            className="flex flex-col items-center justify-center w-full h-full p-4 bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg"
+          >
+            <AudioIcon />
+            {track && (
+              <div className="text-white text-sm mt-2 text-center">
+                <div className="font-bold">{track.title}</div>
+                <div className="text-xs">{track.artist}</div>
+              </div>
+            )}
+          </button>
         );
     }
     
