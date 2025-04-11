@@ -25,10 +25,6 @@ const EditorPage = () => {
 
 
 
-
-
-
-
     const handleAdd = (e) => {
         if (e.key === "Enter" && inputRef.current.value.trim() !== null) {
             e.preventDefault();

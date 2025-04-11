@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import EditorPage from "./poemEditorPage";
 import { createContext } from "react";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,8 @@ const Poem = () => {
   //   setPoemLines(newPoem);
   // };
 
+
+  const navigate = useNavigate();
 
   //Function to pick a random topic i.e., an entry from the Marriam-Webster dictionary
   async function pickTopic() {
@@ -193,17 +196,22 @@ const Poem = () => {
               <EditorPage/>
               <div className="flex justify-between">
 
-              {/* Back button */}
-              <Button
-              onClick = {() => {
-                setPageTitle("Create your Poem");
-                setButtonVisible(true);
-                setEditorPage(false);
-              }} 
-              className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Back</Button>
+                {/* Back button */}
+                <Button
+                onClick = {() => {
+                  setPageTitle("Create your Poem");
+                  setButtonVisible(true);
+                  setEditorPage(false);
+                }} 
+                className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Back</Button>
 
-              {/* Next button */}
-              <Button className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Next</Button>
+                {/* Next button */}
+                <Button 
+                  onClick={() => {
+                    navigate(`/sentiment.js`, {state: { data: poem }});
+                  }}
+                  className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">
+                  Next</Button>
               </div>
               
             </PoemContext.Provider>
