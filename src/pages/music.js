@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import MainHeader from './components/Header'; 
 import AudioBox from './components/AudioBox';
-import NextButton from './components/NextButton';
 
 export default function Music() {
   

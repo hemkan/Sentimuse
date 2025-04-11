@@ -68,19 +68,20 @@ export default function AudioBox({tracks: tracks}) {
     };
 
     return (
-        <div className="flex flex-col gap-1 items-center justify-center w-[55%] h-full">
-            <div className="mb-20 w-full text-white text-center lg:text-start text-[47px] font-[400]">
+        <div className="flex flex-col gap-1 items-center justify-center w-[58%] h-full">
+            <div className="pl-10 mb-20 w-full text-white text-center lg:text-start text-[47px] font-[400]">
             Set the Rhythm
             </div>
             <div className="h-[30%] gap-8 mb-8 w-full flex flex-col lg:flex-row justify-center items-center">
             {/* Maybe add a numbering system for each page? */}
             {/* WILL MAP ITEMS TO ARRAY THAT IS GENERATED WHEN API RETURNS ARRAY, USE LAZY LOADING WITH PAGINATION */}
+            <PaginationIcon  path="M14 26L2 14L14 2"/>
             {tracks.map((track, idx) => (
                 <AudioItem key={idx} track={track} />
                 ))}
-
-        </div>
-
+            <PaginationIcon path="M2 26L14 14L2 2"/>
+            </div>
+            
             {/* Show the Custom button only if an audio file is uploaded */}
         {customDisplay && (
             <button
@@ -170,8 +171,8 @@ export default function AudioBox({tracks: tracks}) {
         return (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="30"
+                width="80"
+                height="80"
                 viewBox="0 0 16 28"
                 fill="none"
                 className="hover:scale-125 ease-in duration-100 cursor-pointer shadow-lg"
