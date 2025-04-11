@@ -1,7 +1,4 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import EditorPage from "./poemEditorPage";
 import { createContext } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,59 +16,47 @@ const Poem = () => {
   const [pageTitle, setPageTitle] = useState("Create your Poem");
   const [buttonVisible, setButtonVisible] = useState(true);
   const [editorPage, setEditorPage] = useState(false);
-
-
-
-
-  const router = useRouter();
-
-  useEffect(() => {
-    // Code we want to run
-    console.log(poemLines)
-    // Optional return
-  }, [poemLines]); // The dependency array, or what it should listen or react to
-  
   
   // Function to regenerate a poem line based on given index
-  const regenerateLine = async (index) => {
-    try {
-      const prompt = `Rhyme this verse "${poemLines[index]}" of the following poem:\n${poemLines.join("\n")}`;
-      console.log(prompt);
+  // const regenerateLine = async (index) => {
+  //   try {
+  //     const prompt = `Rhyme this verse "${poemLines[index]}" of the following poem:\n${poemLines.join("\n")}`;
+  //     console.log(prompt);
 
-      const response = await fetch ("../api/poemAPI", {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({message: prompt}),
-      });
+  //     const response = await fetch ("../api/poemAPI", {
+  //       method: "POST",
+  //       headers: {
+  //         "Accept": "application/json",
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({message: prompt}),
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log(data);
-        changeLine(index, data);
-      }
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log(data);
+  //       changeLine(index, data);
+  //     }
 
-      else {
-        throw new Error("Could not fetch resource!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
+  //     else {
+  //       throw new Error("Could not fetch resource!");
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
 
-  };
+  // };
 
 // Function to change poem line on client side
-  const changeLine = async (newIndex, data) => {
-    const newLine = data.response;
-    //console.log(newLine);
+  // const changeLine = async (newIndex, data) => {
+  //   const newLine = data.response;
+  //   //console.log(newLine);
 
-    const newPoem = poemLines.map((line, index) => 
-      index === newIndex ? newLine : line);
+  //   const newPoem = poemLines.map((line, index) => 
+  //     index === newIndex ? newLine : line);
     
-    setPoemLines(newPoem);
-  };
+  //   setPoemLines(newPoem);
+  // };
 
 
   //Function to pick a random topic i.e., an entry from the Marriam-Webster dictionary
@@ -96,7 +81,7 @@ const Poem = () => {
 
 
   // Function to generate the first poem
-  const generatePoem = async (e) => {
+  const generatePoem = async () => {
     try {
       const prompt = (await pickTopic()).toString();
       const response = await fetch ("../api/poemAPI", {
@@ -111,7 +96,6 @@ const Poem = () => {
       if (response.ok) {
         const data = await response.json();
         displayPoem(data);
-        //router.push("./poemEditorPage");
       }
 
       else {
@@ -151,18 +135,11 @@ const Poem = () => {
     setPoemLines(newPoem);
   };
 
-
-  // Function to save poem to local storage
-  const saveData = (key, data) => {
-    localStorage[key] =  JSON.stringify(data);
-  }
-
   
   // Function to display the poem
   const displayPoem = async (data) => {
     const poem = data.response.split("\n").filter(line => line.trim() !== "").map(line => line.trim());
     setPoemLines(poem);
-    saveData(100, poem);
   };
 
 
