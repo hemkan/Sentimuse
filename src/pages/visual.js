@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Visual = () => {
   const [imageBlob, setImageBlob] = useState(null);
+  const [imageUrl, setImageUrl] = useState(null);
   const [input, setInput] = useState("");
 
   const handleSubmit = async (event) => {
@@ -29,14 +30,24 @@ const Visual = () => {
       }
 
       const imageBlob = await response.blob();
-      const imageUrl = URL.createObjectURL(imageBlob);
       setImageBlob(imageBlob);
       setInput("");
-      console.log(imageUrl);
     } catch (error) {
       console.error("Error generating image:", error);
     }
   };
+
+  // this is to clean up the URL when the component unmounts or the imageBlob changes
+  useEffect(() => {
+    if (imageBlob) {
+      const url = URL.createObjectURL(imageBlob);
+      setImageUrl(url);
+
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    }
+  }, [imageBlob]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
@@ -63,14 +74,10 @@ const Visual = () => {
           Generate Image
         </button>
       </form>
-      {imageBlob && (
+      {imageUrl && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold mb-4">Generated Image</h2>
-          <img
-            src={URL.createObjectURL(imageBlob)}
-            alt="Generated"
-            className="rounded shadow-lg"
-          />
+          <img src={imageUrl} alt="Generated" className="rounded shadow-lg" />
         </div>
       )}
     </div>
