@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import NextButton from "./NextButton";
-import { play } from "elevenlabs";
 
 export default function AudioBox({tracks: tracks}) {
 
@@ -11,18 +10,49 @@ export default function AudioBox({tracks: tracks}) {
     // State toggle for audio controls
     const [isPlaying, setIsPlaying] = useState(false);
     // State toggle for custom button
+    const [customDisplay, setCustomDisplay] = useState(false);
     const [customTrack, setCustomTrack] = useState(false);
+    
 
-  // Toggle audio playback and update play state
+    // Toggle audio playback and update play state
     const playAudio = (url) => {
-        setAudioSrc(url);
-
-        if (!audioRef.current || !url) return;
-
-        audioRef.current.play();
-        
-        setIsPlaying(!isPlaying); // update state
+        // Same track is clicked
+        if (audioSrc === url) {
+            if (isPlaying) {
+                audioRef.current.pause();
+                setIsPlaying(false);
+            } else {
+                audioRef.current.play()
+                    .then(() => {
+                        setIsPlaying(true);
+                    })
+                    .catch(err => console.error("Playback error:", err));
+            }
+        } else {
+            // Different track clicked, update the source (this triggers useEffect)
+            setAudioSrc(url);
+        }
     };
+
+    useEffect(() => {
+    if (!audioRef.current || !audioSrc) return;
+
+    // Pause existing audio and reset time
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    audioRef.current.src = audioSrc;
+
+    audioRef.current
+        .play()
+        .then(() => {
+        console.log("Playing:", audioSrc);
+        setIsPlaying(true);
+        })
+        .catch((err) => {
+        console.error("Playback error:", err);
+        });
+    }, [audioSrc]);
+
 
     // Handle file upload and set the audio source
     const handleFileUpload = (e) => {
@@ -31,9 +61,9 @@ export default function AudioBox({tracks: tracks}) {
         // If the file was an audio file
         if (file) {
             const url = URL.createObjectURL(file); // set file as URL
-            setAudioSrc(url); // update state to store URL
-            setIsPlaying(false); // update state in case for new files
-            setCustomTrack(true);
+            setCustomTrack(url);
+            console.log(`customTrack = ${customTrack}`);
+            setCustomDisplay(true);
         }
     };
 
@@ -52,10 +82,10 @@ export default function AudioBox({tracks: tracks}) {
         </div>
 
             {/* Show the Custom button only if an audio file is uploaded */}
-        {customTrack && (
+        {customDisplay && (
             <button
-                onClick={() => playAudio}
-                style={isPlaying ? { outline: "2px solid #B3445A" } : {}}
+                onClick={() => playAudio(customTrack)}
+                style={(audioSrc && audioSrc === customTrack) && (isPlaying) ? { outline: "2px solid #B3445A" } : {}}
                 className="flex flex-row items-center justify-center gap-2 w-full h-16 mb-7 py-9 bg-[#3A141E] 
                 text-3xl rounded-[30px] shadow-lg hover:bg-[#6F2539] ease-in duration-65"
             >
@@ -119,7 +149,7 @@ export default function AudioBox({tracks: tracks}) {
           <button
             onClick={() => playAudio(track.url)}
             style={
-                audioSrc && audioSrc === track.url
+                (audioSrc && audioSrc === track.url) && (isPlaying)
                   ? { outline: "2px solid #B3445A" }  // Apply style only to the current track
                   : {}
               }

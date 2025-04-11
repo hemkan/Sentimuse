@@ -13,7 +13,7 @@ export default function Music() {
   }, []); 
 
   const fetchTracks = async () => {
-    const query = "vaporwave (instrumental)";
+    const query = "lofi (instrumental)";
     if (!query.trim()) return;
 
     try {
