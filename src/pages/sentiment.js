@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { sentimentOptions } from "./data/sentimentOptions";
+import { useNavigate } from "react-router";
+import { useLocation } from "react-router-dom";
 
 const Sentiment = () =>
 {
-  const [poem, setPoem] = useState("");
+  const { state: incomingPoem } = useLocation();
+  const poem = incomingPoem?.data || "Poem not found.";
+  //const [poem, setPoem] = useState("");
   const [aiSentiment, setAISentiment] = useState("");
   const [customSentiment, setCustomSentiment] = useState("");
   const [processedSentiment, setProcessedSentiment] = useState("");
@@ -12,6 +16,7 @@ const Sentiment = () =>
   const [enterCustom, setEnterCustom] = useState(false);
   const filteredOptions = sentimentOptions.filter((option) => option !== aiSentiment);
   const [shuffledOptions, setShuffledOptions] = useState(filteredOptions);
+  const navigate = useNavigate();
 
   //detect sentiment of poem
   const analyzeSentiment = async () =>
@@ -36,6 +41,11 @@ const Sentiment = () =>
         setSelectedPane({ type: "AI" });
     }
   };
+
+  //analyzeSentiment() will be run after intial page render
+  useEffect(() => {
+    analyzeSentiment();
+  }, []); //empty dependency array [] = tells react to run this only after initial render
 
   //process custom sentiment into single word
   const processCustomSentiment = async () =>
@@ -93,16 +103,17 @@ const Sentiment = () =>
     return "";
   }
 
-  //handles "Next" button click
+  //handles "Next" button click to move to next page
   const handleProceed = () =>
   {
-    const final = getFinalSentiment();
-    alert(`Proceeding with sentiment: ${final}`);
-    console.log("Final Sentiment:", final);
+    const finalSentiment = getFinalSentiment();
+    //alert(`Proceeding with sentiment: ${final}`);
+    //console.log("Final Sentiment:", final);
+
+    navigate("/narration.js", {state: { data: poem, sentiment: finalSentiment}});
   };
 
-  const isSelected = !!selectedPane;
-
+  //randomly select predefined sentiment options
   useEffect(() => {
       let arr = [...filteredOptions];
       let currentIndex = arr.length;
@@ -115,7 +126,7 @@ const Sentiment = () =>
       }
 
       setShuffledOptions(arr);
-  }, [aiSentiment]) //dependency array - this effect runs everytime aiSentiment changes
+  }, [aiSentiment]) //aiSentiment = dependency array - this effect runs everytime aiSentiment changes
 
   return (
     <div style={{ padding: "2rem", textAlign: "center" }}>
