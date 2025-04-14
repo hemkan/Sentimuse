@@ -1,11 +1,16 @@
 import { useRef, useState, useEffect } from "react";
 import NextButton from "./NextButton";
 
-export default function AudioBox({tracks: tracks}) {
-
+export default function AudioBox({ 
+  tracks, 
+  onPrevPage, 
+  onNextPage, 
+  currentPage, 
+  totalPages 
+}) {
     // Reference for custom audio element
     const audioRef = useRef(null);
-    // State to sset audio file path
+    // State to set audio file path
     const [audioSrc, setAudioSrc] = useState(null);
     // State toggle for audio controls
     const [isPlaying, setIsPlaying] = useState(false);
@@ -13,7 +18,6 @@ export default function AudioBox({tracks: tracks}) {
     const [customDisplay, setCustomDisplay] = useState(false);
     const [customTrack, setCustomTrack] = useState(false);
     
-
     // Toggle audio playback and update play state
     const playAudio = (url) => {
         // Same track is clicked
@@ -53,7 +57,6 @@ export default function AudioBox({tracks: tracks}) {
         });
     }, [audioSrc]);
 
-
     // Handle file upload and set the audio source
     const handleFileUpload = (e) => {
         const file = e.target.files[0]; // get the file
@@ -70,49 +73,85 @@ export default function AudioBox({tracks: tracks}) {
     return (
         <div className="flex flex-col gap-1 items-center justify-center w-[58%] h-full">
             <div className="pl-10 mb-20 w-full text-white text-center lg:text-start text-[47px] font-[400]">
-            Set the Rhythm
+                Set the Rhythm
             </div>
+            {/* Page indicator */}
             <div className="h-[30%] gap-8 mb-8 w-full flex flex-col lg:flex-row justify-center items-center">
-            {/* Maybe add a numbering system for each page? */}
-            {/* WILL MAP ITEMS TO ARRAY THAT IS GENERATED WHEN API RETURNS ARRAY, USE LAZY LOADING WITH PAGINATION */}
-            <PaginationIcon  path="M14 26L2 14L14 2"/>
-            {tracks.map((track, idx) => (
-                <AudioItem key={idx} track={track} />
+                {/* Pagination buttons with disabled state handling */}
+                <PaginationIcon 
+                    path="M14 26L2 14L14 2" 
+                    onClick={onPrevPage} 
+                    disabled={currentPage === 0}
+                />
+                
+                {tracks.map((track, idx) => (
+                    <AudioItem 
+                        key={idx} 
+                        track={track} 
+                        playAudio={playAudio} 
+                        isPlaying={isPlaying} 
+                        audioSrc={audioSrc}
+                    />
                 ))}
-            <PaginationIcon path="M2 26L14 14L2 2"/>
+                
+                <PaginationIcon 
+                    path="M2 26L14 14L2 2" 
+                    onClick={onNextPage} 
+                    disabled={currentPage === totalPages - 1}
+                />
             </div>
             
             {/* Show the Custom button only if an audio file is uploaded */}
-        {customDisplay && (
-            <button
-                onClick={() => playAudio(customTrack)}
-                style={(audioSrc && audioSrc === customTrack) && (isPlaying) ? { outline: "2px solid #B3445A" } : {}}
-                className="flex flex-row items-center justify-center gap-2 w-full h-16 mb-7 py-9 bg-[#3A141E] 
-                text-3xl rounded-[30px] shadow-lg hover:bg-[#6F2539] ease-in duration-65"
-            >
-                Custom
-                <AudioIcon width="35" height="35" />
-            </button>
+            {customDisplay && (
+                <button
+                    onClick={() => playAudio(customTrack)}
+                    style={(audioSrc && audioSrc === customTrack) && (isPlaying) ? { outline: "2px solid #B3445A" } : {}}
+                    className="flex flex-row items-center justify-center gap-2 w-[92.5%] h-16 mb-7 py-9 bg-[#3A141E] 
+                    text-3xl rounded-[30px] shadow-lg hover:bg-[#6F2539] ease-in duration-65"
+                >
+                    Custom
+                    <AudioIcon width="35" height="35" />
+                </button>
             )}
 
-        {/* Show the file upload input when no file is uploaded */}
-        <label className="mb-8 text-center cursor-pointer text-white text-2xl font-normal">
-            + Add your own
-            <input
-            type="file"
-            accept="audio/*"
-            className="hidden"
-            onChange={handleFileUpload}
-            />
-        </label>
+            {/* Show the file upload input when no file is uploaded */}
+            <label className="mb-8 text-center cursor-pointer text-white text-2xl font-normal">
+                + Add your own
+                <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={handleFileUpload}
+                />
+            </label>
             
-
             {/* Hidden audio element that plays the uploaded file */}
             {audioSrc && <audio ref={audioRef} src={audioSrc} />}
 
             <NextButton />
         </div>
     );
+
+    function AudioItem({ track, playAudio, isPlaying, audioSrc }) {
+        return (
+          <button
+            onClick={() => playAudio(track.url)}
+            style={
+                (audioSrc && audioSrc === track.url) && (isPlaying)
+                  ? { outline: "2px solid #B3445A" }  // Apply style only to the current track
+                  : {}
+              }
+            className="flex flex-col items-center justify-center w-full h-full p-4 bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg"
+          >
+            <AudioIcon />
+            {track && (
+              <div className="text-white text-sm mt-2 text-center">
+                <div className="font-bold">{track.title}</div>
+              </div>
+            )}
+          </button>
+        );
+    }
 
     function AudioIcon({ width = "40%", height = "40%" }) {
         return (
@@ -145,29 +184,7 @@ export default function AudioBox({tracks: tracks}) {
         );
     }
     
-    function AudioItem({ track }) {
-        return (
-          <button
-            onClick={() => playAudio(track.url)}
-            style={
-                (audioSrc && audioSrc === track.url) && (isPlaying)
-                  ? { outline: "2px solid #B3445A" }  // Apply style only to the current track
-                  : {}
-              }
-            className="flex flex-col items-center justify-center w-full h-full p-4 bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg"
-          >
-            <AudioIcon />
-            {track && (
-              <div className="text-white text-sm mt-2 text-center">
-                <div className="font-bold">{track.title}</div>
-                <div className="text-xs">{track.artist}</div>
-              </div>
-            )}
-          </button>
-        );
-    }
-    
-    function PaginationIcon({ path }) {
+    function PaginationIcon({ path, onClick, disabled }) {
         return (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -175,7 +192,8 @@ export default function AudioBox({tracks: tracks}) {
                 height="80"
                 viewBox="0 0 16 28"
                 fill="none"
-                className="hover:scale-125 ease-in duration-100 cursor-pointer shadow-lg"
+                className={`${disabled ? 'opacity-40' : 'hover:scale-125 ease-in duration-100 cursor-pointer'} shadow-lg`}
+                onClick={disabled ? null : onClick}
             >
                 <path
                 d={path}
@@ -187,7 +205,4 @@ export default function AudioBox({tracks: tracks}) {
             </svg>
         );
     }
-    
 }
-
-

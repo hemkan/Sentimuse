@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   try {
     //MAP THE KEY WORD (INSTRUMENTAL) AT THE END OF QUERIES
     // Maybe the solution could be the sentiment analysis deciding on a genre and then querying that genre with the tag (instrumental) instead? 
-    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=json&limit=4&vocalinstrumental&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
+    const jamendoUrl = `https://api.jamendo.com/v3.0/tracks/?client_id=${process.env.JAMENDO_CLIENT_ID}&format=json&limit=12&vocalinstrumental&search=${encodeURIComponent(prompt)}&audioformat=mp32`;
 
     const response = await fetch(jamendoUrl);
     const data = await response.json();
