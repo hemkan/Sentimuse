@@ -72,7 +72,7 @@ export default function AudioBox({
 
     return (
         <div className="flex flex-col gap-1 items-center justify-center w-[58%] h-full">
-            <div className="pl-10 mb-20 w-full text-white text-center lg:text-start text-[47px] font-[400]">
+            <div className="lg:pl-12 mb-20 w-full text-white text-center lg:text-start text-[47px] font-[400]">
                 Set the Rhythm
             </div>
             {/* Page indicator */}
