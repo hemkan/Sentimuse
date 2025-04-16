@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
 
-const apiKey = process.env.GROQ_API_KEY;
+const apiKey = process.env.GROQ_API_KEY;    // Take API key from local host
 
 if (!apiKey) {
   res.status(500).json({ error: "No API Key" });
@@ -10,30 +10,46 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+// System prompt to generate the first poem
 let systemPrompt = `You are a great poet who can write poems of any topics and structures, such as ballad, sonnet, limerick and free verse.
 Your job is to write a poem, using the user's input as its title.
 You must print out the poem ONLY, and nothing else.
-The poem must be creative and relevant to the title, with a clear theme and message.`;
+The poem must be creative and relevant to the title, with a clear theme and message.
+Make sure to capitalize the first letter at the start of each verse.`;
 
+// System prompt to regenerate a line
 let regenLinePrompt = `You are a great poet who can write poems of any topics and structures.
 You are to rhyme the given verse with a new one, using the poem as context, without any introduction or preamble.
 The new verse must RHYME with the given verse on the LAST WORD, while being relevant to the poem
 The new verse must NOT repeat any part of the given verse, and must be grammatically correct.
 You must output a SINGLE verse ONLY`;
 
+// System prompt to generate a whole poem based on one line
+let genPoemPrompt = `You are a great poet who can write poems of any topics and structures.
+Your job is to write a full poem, using the user's written verse for clues and context.
+You must print out the poem ONLY, and nothing else.
+The poem must be creative and relevant to the user's written verse, having it as the first verse in your poem.
+The second verse must RHYME with the written verse on the LAST WORD.
+Make sure to capitalize the first letter at the start of each verse.`;
+
 export default async function handler(req, res) {
 
   if (req.method === "POST") {
     try {
       let prompt = "";
-      const { message } = await req.body;
+      const { message } = await req.body;   // Getting message prompt
 
       if (!message) {
         return res.status(400).json({ error: "Message content is required." });
       }
 
+
+      // Decides which system prompt to use based on keyword from message prompt
       if (message.toLowerCase().includes("rhyme")) {
         prompt = regenLinePrompt;
+      }
+      else if (message.toLowerCase().includes("create")) {
+        prompt = genPoemPrompt;
       }
       else {
         prompt = systemPrompt;
@@ -50,7 +66,7 @@ export default async function handler(req, res) {
             content: message,
           },
         ],
-        model: "llama-3.1-8b-instant",
+        model: "llama-3.1-8b-instant",    // Groq API selected AI model, CAN CHANGE!
       });
 
       const responseMsg =

@@ -1,66 +1,22 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
-import EditorPage from "./poemEditorPage";
+import { useEffect, useState } from "react";
+import EditorPage from "../components/poemEditorPage";
 import { createContext } from "react";
 import { Button } from "@/components/ui/button";
-
+import { motion, AnimatePresence } from "framer-motion";
+ 
 
 
 export const PoemContext = createContext();
 
-
-
 const Poem = () => {
-  const [poemLines, setPoemLines] = useState([]);
-  // const [input, setInput] = useState("");
-  // const [editId, setEditId] = useState(null);
-  const [pageTitle, setPageTitle] = useState("Create your Poem");
-  const [buttonVisible, setButtonVisible] = useState(true);
-  const [editorPage, setEditorPage] = useState(false);
+
+
   
-  // Function to regenerate a poem line based on given index
-  // const regenerateLine = async (index) => {
-  //   try {
-  //     const prompt = `Rhyme this verse "${poemLines[index]}" of the following poem:\n${poemLines.join("\n")}`;
-  //     console.log(prompt);
-
-  //     const response = await fetch ("../api/poemAPI", {
-  //       method: "POST",
-  //       headers: {
-  //         "Accept": "application/json",
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({message: prompt}),
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log(data);
-  //       changeLine(index, data);
-  //     }
-
-  //     else {
-  //       throw new Error("Could not fetch resource!");
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-
-  // };
-
-// Function to change poem line on client side
-  // const changeLine = async (newIndex, data) => {
-  //   const newLine = data.response;
-  //   //console.log(newLine);
-
-  //   const newPoem = poemLines.map((line, index) => 
-  //     index === newIndex ? newLine : line);
-    
-  //   setPoemLines(newPoem);
-  // };
-
-
-  const navigate = useNavigate();
+  const [poemLines, setPoemLines] = useState([]); // Poem variable, as an array of strings
+  const [pageTitle, setPageTitle] = useState("Create your Poem"); // Display page title
+  const [buttonVisible, setButtonVisible] = useState(true); // Display the option buttons
+  const [editorPage, setEditorPage] = useState(false);  // Display the Editor Page
+  const [userOption, setUserOption] = useState(null); // Store user's selected option
 
   //Function to pick a random topic i.e., an entry from the Marriam-Webster dictionary
   async function pickTopic() {
@@ -69,15 +25,15 @@ const Poem = () => {
 
       if (response.ok) {
         const topicList = (await response.text()).split("\n");
-        const extractedTopics = topicList.map(topic => topic.replace(/^\d+\.\s*/, ''));
+        const extractedTopics = topicList.map(topic => topic.replace(/^\d+\.\s*/, '')); // Remove unnecessary characters from each entry
 
-        const randomNum = Math.floor(Math.random() * extractedTopics.length);
+        const randomNum = Math.floor(Math.random() * extractedTopics.length); // Pick a random number, from 0 up to length of dictionary
         let topic = extractedTopics[randomNum];
         console.log(topic);
         return topic;
       }
     }
-    catch (error) {
+    catch (error) {   // Error Handling
       console.log("Something wrong fetching the dictionary:", error);
     }
   };
@@ -93,58 +49,39 @@ const Poem = () => {
           "Accept": "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({message: prompt}),
+        body: JSON.stringify({message: prompt}), // Send prompt to Poem API
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = await response.json(); // Pass response as JSON object
         displayPoem(data);
       }
 
       else {
-        throw new Error("Could not fetch resource!");
+        throw new Error("Could not fetch resource!"); // Something wrong with API
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error) { // Error Handling
+      console.log(error);   // Log error in console, OR Could be an ALERT POP UP?
     }
   };
 
-  // Function to set the index of the editing line and its preview input
-  const editLine = (index) => {
-    setEditId(index);
-    setInput(poemLines[index]);
-  };
-
-  // Function to set the changes the user makes to a line
-  const handleChange = (e) => {
-    setInput(e.target.value);
-  };
-  
-  // Function to listen for the "Enter" key and set the new poem
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      const newPoem = poemLines.map((line, index) =>
-        index === editId ? input : line);
-
-      setPoemLines(newPoem);
-      setEditId(null);
-    }
-  };
-
-  // Function to remove a line from a poem
-  const removeLine = (deleteId) => {
-    const newPoem = poemLines.filter((line, index) => index !== deleteId);
-
-    setPoemLines(newPoem);
-  };
 
   
-  // Function to display the poem
+  // Function to set the poem
   const displayPoem = async (data) => {
     const poem = data.response.split("\n").filter(line => line.trim() !== "").map(line => line.trim());
-    setPoemLines(poem);
+    // Split JSON object into strings
+    // Filter out empty strings
+    // Map to new function
+    setPoemLines(poem); // Set finished poem
   };
 
+
+  // Animation variables
+  const animationList = {
+    hidden: { opacity: 0, x: -100 },
+    visible: { opacity: 1, x: 0 },
+  };
 
 
   return (
@@ -161,9 +98,11 @@ const Poem = () => {
           {/* Main buttons */}
           <div className={editorPage ? 'flex flex-col' : 'flex items-center justify-between gap-[40px] mb-[50px]'}>
 
+          {/* Option Button 1 (Create with AI) */}
           {buttonVisible && (
             <button
             onClick={() => {
+              setUserOption(1);
               generatePoem();
               setPageTitle("Enhance your Poem");
               setButtonVisible(false);
@@ -175,12 +114,14 @@ const Poem = () => {
             </button>
           )}
 
+          {/* Option Button 2 (Create your Own) */}
           {buttonVisible && (
             <button
             onClick={() => {
-              if (poemLines.length !== 0) {
+              if (poemLines.length !== 0) {   // If user has set a poem, but wishes to generate another, empty the poem variable
                 setPoemLines([]);
               }
+              setUserOption(2);
               setPageTitle("Enhance your Poem");
               setButtonVisible(false);
               setEditorPage(true);
@@ -192,75 +133,43 @@ const Poem = () => {
           )}
 
           {editorPage && (
-            <PoemContext.Provider value={poemLines}>
-              <EditorPage/>
-              <div className="flex justify-between">
+            <PoemContext.Provider value={{ poem: poemLines, option: userOption }}>
 
-                {/* Back button */}
-                <Button
-                onClick = {() => {
-                  setPageTitle("Create your Poem");
-                  setButtonVisible(true);
-                  setEditorPage(false);
-                }} 
-                className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">Back</Button>
+              {/* Animation tag, used to enable animation for its children tags */}
+              <AnimatePresence>        
+                
+                <motion.div
+                  variants={animationList}  // Use attributes from the animationList function
+                  initial="hidden"    // Before animation
+                  animate="visible"   // After animation
+                  exit="hidden"   // Animation for when the tag is removed
+                  transition={{ duration: 0.3 }}>
 
-                {/* Next button */}
-                <Button 
-                  onClick={() => {
-                    navigate(`/sentiment.js`, {state: { data: poem }});
-                  }}
-                  className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">
-                  Next</Button>
-              </div>
-              
+                  {/* Poem Editor Page */}
+                  <EditorPage/>     
+
+
+                  {/* Back button */}
+                  <Button
+                    onClick = {() => {
+                      setPageTitle("Create your Poem");
+                      setButtonVisible(true);
+                      setEditorPage(false);
+                      setPoemLines([]);
+                    }} 
+                    className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">
+                      Back
+                    </Button>
+                </motion.div>
+              </AnimatePresence>
             </PoemContext.Provider>
-          )}
-
-            
+          )} 
           </div>
         </div>
       </main>
     </div>
 
   );
-
-  
-  
-  // return (
-  //   <div>
-  //     <button onClick={generatePoem}>Click me!</button>
-  //     <ul>
-  //       {poemLines.map((line, index) => (
-  //         <li>
-  //           <DropdownMenu>
-  //               {index + 1}. {editId === index ? (
-  //                 <input
-  //                 type="text"
-  //                 value={input}
-  //                 onChange={handleChange}
-  //                 onKeyDown={handleKeyDown}
-  //                 style={{ padding: "5px", fontSize: "16px", color: "red", width: "400px" }}
-  //                 autoFocus
-  //                 />
-  //               ) : (
-  //               <>
-  //                 <DropdownMenuTrigger key={index}>
-  //                 {line}
-  //                 </DropdownMenuTrigger>
-  //               </>)}
-                
-  //             <DropdownMenuContent>
-  //               <DropdownMenuItem onClick={() => regenerateLine(index)}>Regenerate Line</DropdownMenuItem>
-  //               <DropdownMenuItem onClick={() => editLine(index)}>Edit Line</DropdownMenuItem>
-  //               <DropdownMenuItem onClick={() => removeLine(index)} className="text-red-700">Remove Verse</DropdownMenuItem>
-  //             </DropdownMenuContent>
-  //           </DropdownMenu>
-  //         </li>
-  //       ))}
-  //     </ul>
-  //   </div>
-  // );
 }
 
 export default Poem;

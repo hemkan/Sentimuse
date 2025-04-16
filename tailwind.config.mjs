@@ -1,4 +1,9 @@
 /** @type {import('tailwindcss').Config} */
+
+import { color } from 'framer-motion';
+
+const plugin = require('tailwindcss/plugin');
+
 export default {
     darkMode: ["class"],
     content: [
@@ -70,5 +75,27 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    plugin(({ addBase, theme }) => {
+        addBase({
+            '.scrollbar': {
+                overflowY: 'auto',
+                scrollbarColor: `${theme('colors.white')} ${theme('colors.transparent')}`,
+                scrollbarWidth: 'thin',
+            },
+            '.scrollbar::-webkit-scrollbar': {
+                height: '2px',
+                width: '2px',
+            },
+            '.scrollbar::-webkit-scrollbar-thumb': {
+                backgroundColor: theme('colors.blue.600'),
+            },
+            '.scrollbar::-webkit-scrollbar-track-piece': {
+                backgroundColor: theme('colors.blue.200'),
+            },
+			'.scrollbar-::-webkit-scrollbar-button': {
+			}
+        });
+    }),
+]
 };
