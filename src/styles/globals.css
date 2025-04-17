@@ -1,3 +1,15 @@
+@import url("https://fonts.googleapis.com/css2?family=Inria+Sans:wght@300;400;700&display=swap");
+body {
+  font-family: "Inria Sans", sans-serif;
+}
+/* @use "three-dots"; */
+@import "three-dots/dist/three-dots.css";
+.dot-windmill {
+  width: 18px !important;
+  height: 18px !important;
+  background-color: #ec5a72 !important;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
