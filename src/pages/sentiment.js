@@ -3,6 +3,7 @@ import { sentimentOptions } from "./data/sentimentOptions";
 import { useLocation } from "react-router-dom";
 import { usePoemContext } from "@/context/poemContext";
 import { useRouter } from "next/router";
+import { LuPencil } from "react-icons/lu";
 
 const Sentiment = () => {
   //   const { state: incomingPoem } = useLocation();
@@ -44,6 +45,7 @@ const Sentiment = () => {
   useEffect(() => {
     if (!poem) {
       router.push("/poem");
+      console.log("No poem found");
       return;
     }
 
@@ -119,278 +121,170 @@ const Sentiment = () => {
   }, [aiSentiment]); //aiSentiment = dependency array - this effect runs everytime aiSentiment changes
 
   return (
-    <div style={{ padding: "2rem", textAlign: "center" }}>
-      {/*
-        <h1><strong>Sentiment Analyzer</strong></h1>
-
-        {//poem input field}
-        <textarea
-            style={{ color: "black", width: "80%", padding: "0.5rem", marginTop: "1rem", borderRadius: "5px", border: "1px solid gray" }}
-            value={poem}
-            onChange={(e) => setPoem(e.target.value)}
-            placeholder="Enter your poem here..."
-            rows={6}
-        />
-        <br />
-
-        {//analyze sentiment button}
-        <button
-            onClick={analyzeSentiment}
-            style={{ marginTop: "1rem", padding: "0.75rem 1.5rem", backgroundColor: "gray", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-        >
-            Analyze Sentiment
-        </button>
-        */}
-
-      <div>
-        <div className="w-[1280px] h-[832px] relative bg-neutral-900 overflow-hidden">
-          <div className="w-[1280px] h-32 left-0 top-0 absolute bg-neutral-900" />
-          <div className="w-36 h-9 left-[64px] top-[43px] absolute text-center justify-center text-white text-3xl font-normal font-['Inria_Sans']">
+    <div className="min-h-screen bg-[#191113] text-white font-['Inria_Sans'] flex flex-col">
+      {/* Navbar */}
+      {/* <div className="w-full bg-neutral-900 py-4 px-8">
+        <h1 className="text-3xl font-bold">Sentimuse</h1>
+      </div>
+       */}
+      <nav className="w-full h-24 bg-[#191113]">
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="font-['Inria_Sans'] font-normal text-white text-[28px]">
             Sentimuse
           </div>
-          {/* initial layout of sentiment page */}
-          {!enterCustom && (
-            <div>
-              {/* AI-detected sentiment */}
-              <button
-                onClick={() => setSelectedPane({ type: "AI" })}
-                className={`w-[773px] h-28 left-[253px] top-[343px] absolute rounded-[20px] cursor-pointer
-                                ${
-                                  selectedPane?.type === "AI"
-                                    ? "bg-pink-900"
-                                    : "bg-rose-950"
-                                }
-                                hover:border-2 hover:border-pink-700`}
-              >
-                <p className="p-3 text-[50px] font-Inria_Sans">{aiSentiment}</p>
-              </button>
+        </div>
+        <div className="w-full h-px bg-[#FFFFFF40]" />
+      </nav>
 
-              {/* predefined sentiment option 1 */}
-              <button
-                onClick={() =>
-                  setSelectedPane({
-                    type: "predefined",
-                    value: shuffledOptions[0],
-                  })
-                }
-                className={`w-44 h-16 left-[253px] p-1 top-[480px] absolute rounded-[20px] cursor-pointer
-                                ${
-                                  selectedPane?.type === "predefined" &&
-                                  selectedPane.value === shuffledOptions[0]
-                                    ? "bg-pink-900"
-                                    : "bg-rose-950"
-                                }
-                                hover:border hover:border-pink-700`}
-              >
-                <p className="p-2 text-[25px] font-Inria_Sans">
-                  {shuffledOptions[0]}
-                </p>
-              </button>
+      <div className="flex-1 flex items-center">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            {!enterCustom ? (
+              <div className="space-y-8">
+                <h2 className="text-4xl mb-[3rem]">Set the Mood</h2>
 
-              {/* predefined sentiment option 2 */}
-              <button
-                onClick={() =>
-                  setSelectedPane({
-                    type: "predefined",
-                    value: shuffledOptions[1],
-                  })
-                }
-                className={`w-44 h-16 left-[651px] p-1 top-[480px] absolute rounded-[20px] cursor-pointer
-                            ${
-                              selectedPane?.type === "predefined" &&
-                              selectedPane.value === shuffledOptions[1]
-                                ? "bg-pink-900"
-                                : "bg-rose-950"
-                            }
-                            hover:border hover:border-pink-700`}
-              >
-                <p className="p-2 text-[25px] font-Inria_Sans">
-                  {shuffledOptions[1]}
-                </p>
-              </button>
-
-              {/* predefined sentiment option 3 */}
-              <button
-                onClick={() =>
-                  setSelectedPane({
-                    type: "predefined",
-                    value: shuffledOptions[2],
-                  })
-                }
-                className={`w-44 h-16 left-[851px] p-1 top-[480px] absolute rounded-[20px] cursor-pointer
-                            ${
-                              selectedPane?.type === "predefined" &&
-                              selectedPane.value === shuffledOptions[2]
-                                ? "bg-pink-900"
-                                : "bg-rose-950"
-                            }
-                            hover:border hover:border-pink-700`}
-              >
-                <p className="p-2 text-[25px] font-Inria_Sans">
-                  {shuffledOptions[2]}
-                </p>
-              </button>
-
-              {/* predefined sentiment option 4 */}
-              <button
-                onClick={() =>
-                  setSelectedPane({
-                    type: "predefined",
-                    value: shuffledOptions[3],
-                  })
-                }
-                className={`w-44 h-16 left-[452px] p-1 top-[480px] absolute rounded-[20px] cursor-pointer
-                            ${
-                              selectedPane?.type === "predefined" &&
-                              selectedPane.value === shuffledOptions[3]
-                                ? "bg-pink-900"
-                                : "bg-rose-950"
-                            }
-                                hover:border hover:border-pink-700`}
-              >
-                <p className="p-2 text-[25px] font-Inria_Sans">
-                  {shuffledOptions[3]}
-                </p>
-              </button>
-
-              <div className="left-[249px] top-[222px] absolute justify-center text-white text-4xl font-normal font-['Inria_Sans']">
-                Set the Mood
-              </div>
-
-              {/* user clicks to add custom sentiment */}
-              {processedSentiment ? (
-                //button for processed input already present
-                <div
-                  className="left-[563px] top-[670px] absolute text-center justify-center text-white text-2xl font-normal font-['Inria_Sans'] cursor-pointer
-                                    hover:scale-105 transform transition-transform duration-150"
-                  onClick={() => setEnterCustom(true)}
+                {/* AI-detected sentiment */}
+                <button
+                  onClick={() => setSelectedPane({ type: "AI" })}
+                  className={`w-full h-28 rounded-[20px] cursor-pointer transition-all duration-200
+                    ${
+                      selectedPane?.type === "AI"
+                        ? "bg-pink-900"
+                        : "bg-rose-950"
+                    }
+                    hover:ring-2 hover:ring-pink-700`}
                 >
-                  + Add your own
+                  <p className="p-3 text-[25px]">{aiSentiment}</p>
+                </button>
+
+                {/* Predefined sentiment options */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {shuffledOptions.slice(0, 4).map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() =>
+                        setSelectedPane({ type: "predefined", value: option })
+                      }
+                      className={`h-16 rounded-[20px] cursor-pointer transition-all duration-200
+                        ${
+                          selectedPane?.type === "predefined" &&
+                          selectedPane.value === option
+                            ? "bg-pink-900"
+                            : "bg-rose-950"
+                        }
+                        hover:ring-2 hover:ring-pink-700`}
+                    >
+                      <p className="p-2 text-[25px]">{option}</p>
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                //no button for processed input present (first time user is entering input)
+
+                {/* Processed custom sentiment display */}
+                {processedSentiment && (
+                  <button
+                    onClick={() =>
+                      setSelectedPane({
+                        type: "custom",
+                        value: processedSentiment,
+                      })
+                    }
+                    className={`w-full py-3 rounded-[20px] cursor-pointer transition-all duration-200
+                      ${
+                        selectedPane?.type === "custom" &&
+                        selectedPane.value === processedSentiment
+                          ? "bg-pink-900"
+                          : "bg-rose-950"
+                      }
+                      hover:ring-2 hover:ring-pink-700 flex items-center justify-center gap-2`}
+                  >
+                    <p className="text-[25px]">{processedSentiment}</p>
+                    <LuPencil
+                      className="text-xl hover:scale-110 transition-transform duration-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEnterCustom(true);
+                      }}
+                    />
+                  </button>
+                )}
+
+                {/* Add your own button - only show if no processed sentiment */}
+                {!processedSentiment && (
+                  <div
+                    className="text-center text-2xl cursor-pointer hover:scale-105 transform transition-transform duration-150"
+                    onClick={() => setEnterCustom(true)}
+                  >
+                    + Add your own
+                  </div>
+                )}
+
+                {/* Next button */}
+                <div className="flex justify-end" style={{ marginTop: "3rem" }}>
+                  <button
+                    onClick={handleProceed}
+                    disabled={
+                      getFinalSentiment() === "Unknown" ||
+                      getFinalSentiment() === ""
+                    }
+                    className={`w-48 h-11 rounded-[20px] flex items-center justify-center
+                      ${
+                        getFinalSentiment() === "Unknown" ||
+                        getFinalSentiment() === ""
+                          ? "bg-gray-400"
+                          : "bg-red-400"
+                      }
+                      hover:ring-2 hover:ring-pink-700 transition-all duration-200`}
+                  >
+                    <p className="text-2xl">Next</p>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <h2 className="text-4xl text-center mb-15">
+                  Enter Your Sentiment
+                </h2>
+
+                {/* Custom input textarea */}
                 <div
-                  className="left-[558px] top-[573px] absolute text-center justify-center text-white text-2xl font-normal font-['Inria_Sans'] cursor-pointer
-                                    hover:scale-105 transform transition-transform duration-150"
-                  onClick={() => setEnterCustom(true)}
+                  onClick={() => setSelectedPane({ type: "custom" })}
+                  className="w-full h-28 bg-rose-950 rounded-[20px] cursor-text"
                 >
-                  + Add your own
+                  <input
+                    value={customSentiment}
+                    onChange={(e) => setCustomSentiment(e.target.value)}
+                    placeholder="Type your sentiment here..."
+                    className="w-full h-full bg-transparent border-none outline-none text-white p-4 px-7 text-[40px] resize-none"
+                  />
                 </div>
-              )}
 
-              <div className="w-48 h-11 left-[836px] top-[668px] absolute bg-red-400 rounded-[20px]" />
-              <div className="w-48 h-11 left-[836px] top-[668px] absolute text-center justify-center text-white text-2xl font-normal font-['Inria_Sans']">
-                Next
+                {/* Action buttons */}
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={() => setEnterCustom(false)}
+                    className="w-24 h-11 bg-red-400 rounded-[20px] hover:ring-2 hover:ring-pink-700 flex items-center justify-center"
+                  >
+                    <span className="text-2xl">🡰</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      processCustomSentiment();
+                    }}
+                    disabled={!customSentiment}
+                    className={`w-48 h-11 rounded-[20px] flex items-center justify-center
+                      ${!customSentiment ? "bg-gray-400" : "bg-red-400"}
+                      hover:ring-2 hover:ring-pink-700 transition-all duration-200`}
+                  >
+                    <p className="text-2xl">
+                      {isProcessing ? "Processing..." : "Process"}
+                    </p>
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* user is entering custom input */}
-          {enterCustom ? (
-            <div>
-              <div
-                onClick={() => setSelectedPane({ type: "custom" })}
-                className="w-[773px] h-28 left-[253px] top-[343px] absolute bg-rose-950 rounded-[20px]"
-                style={{
-                  borderRadius: "8px",
-                  cursor: "text",
-                  position: "absolute",
-                }}
-              >
-                {/* user input text box */}
-                <textarea
-                  value={customSentiment}
-                  onChange={(e) => setCustomSentiment(e.target.value)}
-                  placeholder="Type your sentiment here..."
-                  className="font-Inria_Sans"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    outline: "none",
-                    color: "white",
-                    padding: "1rem",
-                    fontSize: "50px",
-                    resize: "none",
-                  }}
-                />
-              </div>
-              {/* process button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  processCustomSentiment();
-                }}
-                className={`w-48 h-11 left-[836px] top-[506px] absolute rounded-[20px]
-                                    ${
-                                      !customSentiment
-                                        ? "bg-gray-400"
-                                        : "bg-red-400"
-                                    }
-                                    hover:border-2`}
-                disabled={!customSentiment}
-              >
-                <p className="text-[25px] font-Inria_Sans">
-                  {isProcessing ? "Processing..." : "Process"}{" "}
-                  {/*show "processing" while input is processing */}
-                </p>
-              </button>
-
-              {/* back button */}
-              <button
-                onClick={() => setEnterCustom(false)}
-                className="w-24 h-11 left-[255px] top-[506px] absolute bg-red-400 rounded-[20px] hover:border-2"
-              >
-                <p style={{ padding: "0rem", fontSize: "25px" }}>🡰</p>
-              </button>
-            </div>
-          ) : (
-            //not on custom input screen
-            //next button
-            <button
-              onClick={handleProceed}
-              disabled={
-                getFinalSentiment() === "Unknown" || getFinalSentiment() === ""
-              }
-              style={{
-                backgroundColor:
-                  getFinalSentiment() === "Unknown" ||
-                  getFinalSentiment() === ""
-                    ? "gray"
-                    : undefined,
-                cursor:
-                  getFinalSentiment() === "Unknown" ? "not-allowed" : "pointer",
-              }}
-              className="w-48 h-11 left-[836px] top-[668px] absolute bg-red-400 rounded-[20px]
-                                flex items-center justify-center hover:border-2"
-            >
-              <p className="text-[25px] font-Inria_Sans m-0">Next</p>
-            </button>
-          )}
-
-          {/* user has processed custom input */}
-          {processedSentiment && !enterCustom && (
-            //button for user's processed sentiment
-            <button
-              onClick={() =>
-                setSelectedPane({ type: "custom", value: processedSentiment })
-              }
-              className={`w-44 h-16 left-[558px] top-[560px] absolute rounded-[20px] cursor-pointer
-                            ${
-                              selectedPane?.type === "custom" &&
-                              selectedPane.value === processedSentiment
-                                ? "bg-pink-900"
-                                : "bg-rose-950"
-                            }
-                                hover:border hover:border-pink-700`}
-            >
-              <p className="p-3 text-[25px] font-Inria_Sans">
-                {processedSentiment}
-              </p>
-            </button>
-          )}
-          <div className="w-[1280px] h-0 left-0 top-[132px] absolute outline outline-1 outline-offset-[-0.50px] outline-white outline-opacity-40"></div>
+            )}
+          </div>
         </div>
       </div>
     </div>
