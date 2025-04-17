@@ -1,13 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";                // Animation module
 import { Tooltip } from "react-tooltip";                                // Tooltip module
 import { useContext, useState, useRef, useEffect } from "react";
-import { PoemContext } from "../pages/poem";
+import { UserPoemContext } from "../pages/poem";
 import { Button } from "@/components/ui/button";                        // Button module
 import { IoIosAdd } from "react-icons/io";                              // Add symbol
 import { MdOutlineReplay, MdAutoDelete } from "react-icons/md";         // Replay & delete symbols
 import { PiFilePlus } from "react-icons/pi";                            // Add file symbol
 import { PuffLoader } from "react-spinners";                            // Loading Screen Spinner
 import { useRouter } from "next/router";
+// import { usePoemContext } from "@/context/poemContext";
+import { PoemContext } from "@/context/poemContext";
 
 const EditorPage = () => {
     
@@ -25,8 +27,8 @@ const EditorPage = () => {
 
     const router = useRouter();                                     // Used to route to next page
 
-    const { poem, option } = useContext(PoemContext);
-
+    const { poem, option } = useContext(UserPoemContext);
+    const { setPoem } = useContext(PoemContext);
 
     useEffect(() => {
         if (option !== 1) {         // User chose to create their own poem
@@ -48,6 +50,7 @@ const EditorPage = () => {
             });
         }
 
+        console.log(setPoem);
     }, [poem]);
 
 
@@ -203,8 +206,8 @@ const EditorPage = () => {
     };
 
     // Function to handle passing the poem to the next page (Sentiment)
-    const submitPoem = () => {
-        localStorage.setItem('poem', JSON.stringify(userPoem));
+    const submitPoem = async () => {
+        setPoem(userPoem);
         router.push('/sentiment');
     };
       

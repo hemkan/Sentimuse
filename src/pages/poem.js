@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import EditorPage from "../components/poemEditorPage";
 import { createContext } from "react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
  
 
 
-export const PoemContext = createContext();
+export const UserPoemContext = createContext();
 
 const Poem = () => {
 
@@ -133,7 +133,7 @@ const Poem = () => {
           )}
 
           {editorPage && (
-            <PoemContext.Provider value={{ poem: poemLines, option: userOption }}>
+            <UserPoemContext.Provider value={{ poem: poemLines, option: userOption }}>
 
               {/* Animation tag, used to enable animation for its children tags */}
               <AnimatePresence>        
@@ -162,7 +162,7 @@ const Poem = () => {
                     </Button>
                 </motion.div>
               </AnimatePresence>
-            </PoemContext.Provider>
+            </UserPoemContext.Provider>
           )} 
           </div>
         </div>
