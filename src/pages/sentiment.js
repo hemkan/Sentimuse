@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { sentimentOptions } from "./data/sentimentOptions";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { usePoemContext } from "@/context/poemContext";
 import { useRouter } from "next/router";
 
 const Sentiment = () => {
   //   const { state: incomingPoem } = useLocation();
-  const { poem } = usePoemContext();
+  const { poem, setSentiment } = usePoemContext();
   const router = useRouter();
   //   const poem = incomingPoem?.data || "Poem not found.";
   //const [poem, setPoem] = useState("");
@@ -21,7 +21,7 @@ const Sentiment = () => {
     (option) => option !== aiSentiment
   );
   const [shuffledOptions, setShuffledOptions] = useState(filteredOptions);
-  const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   //detect sentiment of poem
   const analyzeSentiment = async () => {
@@ -100,9 +100,10 @@ const Sentiment = () => {
     //alert(`Proceeding with sentiment: ${final}`);
     //console.log("Final Sentiment:", final);
 
-    navigate("/narration.js", {
-      state: { data: poem, sentiment: finalSentiment },
-    });
+    // store in context
+    setSentiment(finalSentiment);
+    // navigate to narration page
+    router.push("/narration");
   };
 
   //randomly select predefined sentiment options
