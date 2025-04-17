@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { sentimentOptions } from "./data/sentimentOptions";
-// import { useNavigate } from "react-router";
 import { useLocation } from "react-router-dom";
 import { usePoemContext } from "@/context/poemContext";
 import { useRouter } from "next/router";
@@ -21,7 +20,6 @@ const Sentiment = () => {
     (option) => option !== aiSentiment
   );
   const [shuffledOptions, setShuffledOptions] = useState(filteredOptions);
-  //   const navigate = useNavigate();
 
   //detect sentiment of poem
   const analyzeSentiment = async () => {
