@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { sentimentOptions } from "./data/sentimentOptions";
+import { sentimentOptions } from "@/data/sentimentOptions";
 import { useLocation } from "react-router-dom";
 import { usePoemContext } from "@/context/poemContext";
 import { useRouter } from "next/router";
