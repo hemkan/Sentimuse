@@ -1,17 +1,17 @@
 import { ElevenLabsClient } from "elevenlabs";
 
-const apiKey = process.env.ELEVENLABS_API_KEY;
-
-if (!apiKey) {
-  res.status(500).json({ error: "No API Key" });
-}
-
-const elevenLabs = new ElevenLabsClient({
-  apiKey,
-});
-
 export default async function getNarrationStream(req, res) {
   if (req.method == "POST") {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+
+    if (!apiKey) {
+      res.status(500).json({ error: "No API Key" });
+    }
+
+    const elevenLabs = new ElevenLabsClient({
+      apiKey,
+    });
+
     const { poetry: text, voice } = req.body;
 
     if (!text) {
@@ -19,8 +19,7 @@ export default async function getNarrationStream(req, res) {
     }
 
     try {
-      const audio = await elevenLabs.generate({
-        voice,
+      const audioStream = await elevenLabs.textToSpeech.convertAsStream(voice, {
         text,
         model_id: "eleven_turbo_v2",
       });
@@ -28,11 +27,11 @@ export default async function getNarrationStream(req, res) {
       res.status(200);
       res.setHeader("Content-Type", "audio/mpeg");
 
-      audio.pipe(res);
+      audioStream.pipe(res);
 
       await new Promise((resolve, reject) => {
-        audio.on("end", resolve);
-        audio.on("error", reject);
+        audioStream.on("end", resolve);
+        audioStream.on("error", reject);
       });
     } catch (error) {
       console.log(error);

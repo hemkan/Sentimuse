@@ -1,30 +1,36 @@
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
+import {
+  MdOutlineKeyboardArrowLeft,
+  MdOutlineKeyboardArrowRight,
+} from "react-icons/md";
+import { HiMiniSpeakerWave } from "react-icons/hi2";
+import { FaSpinner } from "react-icons/fa6";
+import { usePoemContext } from "@/context/poemContext";
+import { useRouter } from "next/router";
 
 let voices = [
-  { number: 1 },
-  { number: 2 },
-  { number: 3 },
-  { number: 4 },
-  { number: 5 },
-  { number: 6 },
-  { number: 7 },
-  { number: 8 },
-];
-
-voices = [
-  ...(voices.length > 1 ? voices.slice(voices.length - 2) : []),
-  ...voices,
-  ...(voices.length > 1 ? voices.slice(0, 2) : []),
+  { id: "NFG5qt843uXKj4pFvR7C", name: "Adam Stone" },
+  { id: "FVQMzxJGPUBtfz1Azdoy", name: "Danielle" },
+  { id: "uju3wxzG5OhpWcoi3SMy", name: "Michael Vincent" },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Sarah" },
+  { id: "5Q0t7uMcjvnagumLfvZi", name: "Paul" },
+  { id: "LcfcDJNUP1GQjkzn1xUU", name: "Emily" },
+  { id: "CYw3kZ02Hs0563khs1Fj", name: "Dave" },
+  { id: "9BWtsMINqrJLrRacOk9x", name: "Aria" },
 ];
 
 const Narration = () => {
-  const [narrationBlob, setNarrationBlob] = useState(null);
-  const [voiceIndex, setVoiceIndex] = useState(voices.length > 1 ? 2 : 0);
-  const [disabled, setDisabled] = useState(false);
-  const [animate, setAnimate] = useState(true);
+  const audioRef = useRef(null);
+  const [voiceIndex, setVoiceIndex] = useState(0);
+  const [disableVoice, setDisableVoice] = useState(false);
+  const [playingVoice, setPlayingVoice] = useState(null);
+  const [selectedVoice, setSelectedVoice] = useState(null);
+  const { setNarration } = usePoemContext();
+  const router = useRouter();
 
-  const hoverNarration = async (voice, poetry) => {
+  const generateNarration = async (voice, poetry) => {
     try {
+      setDisableVoice(true);
       const response = await fetch("../api/narrationAPI", {
         method: "POST",
         headers: {
@@ -38,14 +44,35 @@ const Narration = () => {
 
       if (!response.ok) {
         const responseError = await response.json();
-        throw new Error(responseError.error);
+        throw new Error(responseError.error || "An error occurred");
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute("src");
+        audioRef.current.load();
+        audioRef.current = null;
       }
 
       const audio = new Audio();
       const mediaSource = new MediaSource();
       audio.src = URL.createObjectURL(mediaSource);
+      audio.autoplay = true;
+      audio.preload = "auto";
 
-      const rawAudio = [];
+      audio.addEventListener("ended", () => {
+        console.log("Audio ended");
+        setDisableVoice(false);
+        setPlayingVoice(null);
+      });
+      audio.addEventListener("error", () => {
+        setDisableVoice(false);
+        setPlayingVoice(null);
+        console.error("Audio error occurred");
+        console.log(audio.error);
+      });
+
+      audioRef.current = audio;
 
       mediaSource.addEventListener("sourceopen", async () => {
         const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
@@ -56,21 +83,26 @@ const Narration = () => {
           const { value, done } = await reader.read();
 
           if (value) {
-            if (sourceBuffer.updating) {
-              await new Promise((resolve) => {
-                sourceBuffer.addEventListener("updateend", resolve, {
-                  once: true,
-                });
+            await new Promise((resolve) => {
+              if (!sourceBuffer.updating) {
+                return resolve();
+              }
+              sourceBuffer.addEventListener("updateend", resolve, {
+                once: true,
               });
-            }
+            });
 
             sourceBuffer.appendBuffer(value);
+
+            await new Promise((resolve) => {
+              sourceBuffer.addEventListener("updateend", resolve, {
+                once: true,
+              });
+            });
 
             if (audio.paused) {
               audio.play();
             }
-
-            rawAudio.push(value);
           }
 
           if (done) {
@@ -83,148 +115,110 @@ const Narration = () => {
             }
 
             setTimeout(() => {
-              mediaSource.endOfStream();
-              audio.pause();
-            }, 1000);
-
-            setNarrationBlob(new Blob(rawAudio));
+              if (mediaSource.readyState === "open") {
+                mediaSource.endOfStream();
+              }
+              // audio.pause();
+            }, 500);
             break;
           }
         }
       });
-
-      // audio.play();
     } catch (error) {
       console.error("WOMP WOMP. AN ERROR OCCURED: " + error.message || error);
+      setDisableVoice(false);
+      setPlayingVoice(null);
     }
   };
 
-  const nextVoice = () => {
-    setVoiceIndex((index) => {
-      return (index + 1) % voices.length;
-    });
+  const navigateToNextPage = () => {
+    setNarration(voices[selectedVoice].id);
+    router.push("/music");
   };
-
-  const prevVoice = () => {
-    setVoiceIndex((index) => {
-      return (index - 1 + voices.length) % voices.length;
-    });
-  };
-
-  useEffect(() => {
-    if (voices.length > 1) {
-      if (voiceIndex <= 1) {
-        setDisabled(true);
-
-        setTimeout(() => {
-          setAnimate(false);
-          setVoiceIndex((index) => {
-            return voices.length + index - 3 - 1;
-          });
-
-          setTimeout(() => {
-            setAnimate(true);
-            setDisabled(false);
-          }, 50);
-        }, 350);
-      } else if (voices.length - voiceIndex <= 2) {
-        setDisabled(true);
-
-        setTimeout(() => {
-          setAnimate(false);
-          setVoiceIndex((index) => {
-            return index - (voices.length - 2 - 1) + 1;
-          });
-
-          setTimeout(() => {
-            setAnimate(true);
-            setDisabled(false);
-          }, 50);
-        }, 350);
-      }
-    }
-  }, [voiceIndex, voices.length]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black">
-      <div className="overflow-x-hidden w-[80%] relative border-2">
-        <div
-          className="flex gap-[2%] m-auto transition-transform ease-in-out"
-          style={{
-            transform: `translateX(calc(-${voiceIndex * 82}% + 10%))`,
-            transitionDuration: animate ? "0.3s" : "0s",
-          }}
-        >
-          {voices.map((voice, index) => {
-            return (
-              <div
-                key={index}
-                className="flex justify-center items-center w-[80%] h-96 bg-gray-200 flex-shrink-0"
-              >
-                {voice.number}
-              </div>
-            );
-          })}
+    <div className="min-h-dvh flex flex-col bg-[#191113]">
+      <div className="px-12 py-10 border-b border-white">
+        <span className="text-4xl text-white">Sentimuse</span>
+      </div>
+
+      <div className="mx-auto py-20 px-28 flex flex-col justify-center gap-16 w-full">
+        <h3 className="text-3xl text-white">Choose Your Voice</h3>
+        <div className="flex gap-2 items-center">
+          <button
+            className="p-4 text-white rounded-md hover:bg-[#6F2539] hover:bg-opacity-55 disabled:opacity-50"
+            disabled={voiceIndex === 0}
+            onClick={() => setVoiceIndex((prev) => prev - 1)}
+          >
+            <MdOutlineKeyboardArrowLeft className="w-[30px] h-[30px]" />
+          </button>
+
+          <div className="w-full overflow-x-hidden">
+            <div
+              className="flex gap-8 w-full"
+              style={{
+                transform: `translateX(calc(-1 * ${voiceIndex} * (((100% - 64px) / 3) + 32px)))`,
+                transitionDuration: "0.3s",
+              }}
+            >
+              {voices.map((voice, index) => {
+                return (
+                  <div
+                    key={index}
+                    className={`flex flex-col justify-center items-center gap-8 h-96 cursor-pointer ${
+                      selectedVoice === index
+                        ? "bg-[#6F2539]"
+                        : "bg-[#3A141E] hover:bg-[#4A1925]"
+                    } flex-shrink-0 rounded-xl px-2.5 py-2`}
+                    style={{
+                      width: "calc((100% - 64px) / 3)",
+                    }}
+                    onClick={(e) => {
+                      if (e.target.closest("button")) return;
+
+                      setSelectedVoice(index);
+                    }}
+                  >
+                    <button
+                      disabled={disableVoice}
+                      className="p-5 rounded-full bg-[#5E1A2E] hover:bg-[#672034] disabled:opacity-50"
+                      onClick={() => {
+                        generateNarration(
+                          voice.id,
+                          "This is a test narration."
+                        );
+                        setPlayingVoice(index);
+                      }}
+                    >
+                      {playingVoice === index ? (
+                        <FaSpinner className="w-[40px] h-[40px] animate-spin" />
+                      ) : (
+                        <HiMiniSpeakerWave className="w-[40px] h-[40px]" />
+                      )}
+                    </button>
+                    <span className="text-2xl text-center">{voice.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            className="p-4 text-white rounded-md hover:bg-[#6F2539] hover:bg-opacity-55 disabled:opacity-50"
+            disabled={voiceIndex + 2 === voices.length - 1}
+            onClick={() => setVoiceIndex((prev) => prev + 1)}
+          >
+            <MdOutlineKeyboardArrowRight className="w-[30px] h-[30px]" />
+          </button>
         </div>
 
-        <div
-          className="w-full h-full absolute top-0 flex items-center justify-between"
-          style={{
-            padding: "0 calc(4% - 23.5px)",
-          }}
+        <button
+          className="ml-auto mr-[70px] px-8 py-2.5 bg-[#cf5267] hover:bg-[#EC5A72] rounded-2xl disabled:opacity-50"
+          disabled={disableVoice || selectedVoice === null}
+          onClick={navigateToNextPage}
         >
-          <button
-            className="bg-gray-700 rounded-full text-white p-1.5"
-            onClick={prevVoice}
-            disabled={disabled}
-            style={{
-              backgroundColor: disabled
-                ? "rgb(150, 160, 170)"
-                : "rgb(74, 85, 104)",
-            }}
-          >
-            <svg
-              width="35"
-              height="35"
-              viewBox="0 0 15 15"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6.85355 3.14645C7.04882 3.34171 7.04882 3.65829 6.85355 3.85355L3.70711 7H12.5C12.7761 7 13 7.22386 13 7.5C13 7.77614 12.7761 8 12.5 8H3.70711L6.85355 11.1464C7.04882 11.3417 7.04882 11.6583 6.85355 11.8536C6.65829 12.0488 6.34171 12.0488 6.14645 11.8536L2.14645 7.85355C1.95118 7.65829 1.95118 7.34171 2.14645 7.14645L6.14645 3.14645C6.34171 2.95118 6.65829 2.95118 6.85355 3.14645Z"
-                fill="currentColor"
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-          <button
-            className="rounded-full text-white p-1.5"
-            onClick={nextVoice}
-            disabled={disabled}
-            style={{
-              backgroundColor: disabled
-                ? "rgb(150, 160, 170)"
-                : "rgb(74, 85, 104)",
-            }}
-          >
-            {" "}
-            <svg
-              width="35"
-              height="35"
-              viewBox="0 0 15 15"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z"
-                fill="currentColor"
-                fill-rule="evenodd"
-                clip-rule="evenodd"
-              ></path>
-            </svg>
-          </button>
-        </div>
+          Next
+        </button>
       </div>
     </div>
   );
