@@ -7,7 +7,7 @@ if (!apiKey) {
 }
 
 const elevenLabs = new ElevenLabsClient({
-  apiKey,
+  apiKey: process.env.ELEVENLABS_API_KEY,
 });
 
 export default async function getNarrationStream(req, res) {
