@@ -106,20 +106,19 @@ const Narration = () => {
           }
 
           if (done) {
-            if (sourceBuffer.updating) {
-              await new Promise((resolve) => {
-                sourceBuffer.addEventListener("updateend", resolve, {
-                  once: true,
-                });
-              });
-            }
-
-            setTimeout(() => {
-              if (mediaSource.readyState === "open") {
-                mediaSource.endOfStream();
+            await new Promise((resolve) => {
+              if (!sourceBuffer.updating) {
+                return resolve();
               }
-              // audio.pause();
-            }, 500);
+              sourceBuffer.addEventListener("updateend", resolve, {
+                once: true,
+              });
+            });
+
+            if (mediaSource.readyState === "open") {
+              mediaSource.endOfStream();
+            }
+            // audio.pause();
             break;
           }
         }
@@ -164,7 +163,7 @@ const Narration = () => {
               {voices.map((voice, index) => {
                 return (
                   <div
-                    key={index}
+                    key={voice.id}
                     className={`flex flex-col justify-center items-center gap-8 h-96 cursor-pointer ${
                       selectedVoice === index
                         ? "bg-[#6F2539]"
