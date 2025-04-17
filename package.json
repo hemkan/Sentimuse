@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^2.1.2",
     "@supabase/supabase-js": "^2.48.1",
     "axios": "^1.7.9",
     "crunker": "^2.4.0",
@@ -25,6 +26,7 @@
     "npm": "^11.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-icons": "^5.5.0",
     "transloadit": "^3.0.2"
   },
   "devDependencies": {
