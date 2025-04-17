@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import NextButton from "./NextButton";
+import { usePoemContext } from "../context/poemContext"; // Import the existing context
 
 export default function AudioBox({ 
   tracks, 
@@ -8,9 +9,11 @@ export default function AudioBox({
   currentPage, 
   totalPages 
 }) {
+    // Get the music state from PoemContext
+    const { music, setMusic } = usePoemContext();
+    
     // Reference for custom audio element
     const audioRef = useRef(null);
-    // State to set audio file path
     const [audioSrc, setAudioSrc] = useState(null);
     // State toggle for audio controls
     const [isPlaying, setIsPlaying] = useState(false);
@@ -18,44 +21,105 @@ export default function AudioBox({
     const [customDisplay, setCustomDisplay] = useState(false);
     const [customTrack, setCustomTrack] = useState(false);
     
+    // On component mount, check if a track is already selected in context
+    useEffect(() => {
+      // If music is already set in context, update local state
+      if (music) {
+        // If it's a custom track
+        if (music.isCustom) {
+          setCustomTrack(music.url);
+          setCustomDisplay(true);
+        }
+      }
+    }, []);
+    
     // Toggle audio playback and update play state
-    const playAudio = (url) => {
-        // Same track is clicked
-        if (audioSrc === url) {
+    const playAudio = (url, trackId = null, isCustomTrack = false) => {
+        console.log("Playing audio:", { url, trackId, isCustomTrack });
+        
+        // Check if same track is clicked or a different one
+        const isSameTrack = 
+          (isCustomTrack && music?.isCustom && music?.url === url) ||
+          (!isCustomTrack && music?.id === trackId && music?.url === url);
+            
+        if (isSameTrack) {
+            // Toggle play/pause for the same track
             if (isPlaying) {
-                audioRef.current.pause();
+                audioRef.current?.pause();
                 setIsPlaying(false);
             } else {
-                audioRef.current.play()
+                audioRef.current?.play()
                     .then(() => {
                         setIsPlaying(true);
                     })
                     .catch(err => console.error("Playback error:", err));
             }
         } else {
-            // Different track clicked, update the source (this triggers useEffect)
-            setAudioSrc(url);
+            // Different track clicked, update context and local state
+            if (isCustomTrack) {
+                setMusic({
+                    isCustom: true,
+                    url: url,
+                    title: "Custom Track"
+                });
+                setAudioSrc(customTrack);
+            } else {
+                // Make sure trackId is definitely set when storing in context
+                const selectedTrack = tracks.find(t => t.id === trackId);
+                console.log("Selected track:", selectedTrack);
+                setAudioSrc(url);
+                
+                setMusic({
+                    id: trackId, // Store the ID for comparison
+                    url: url,
+                    isCustom: false,
+                    title: selectedTrack?.title || "Track"
+                });
+            }
+            
+            // Reset audio element for new track
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
         }
     };
 
     useEffect(() => {
-    if (!audioRef.current || !audioSrc) return;
+        if (!audioRef.current || !music?.url) return;
 
-    // Pause existing audio and reset time
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    audioRef.current.src = audioSrc;
+        const playTrack = async () => {
+            try {
+                // Safely update audio source
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+                audioRef.current.src = music.url;
+                
+                // Use await to catch any errors during play
+                await audioRef.current.play();
+                console.log("Playing:", music.url);
+                setIsPlaying(true);
+            } catch (err) {
+                // Handle abort errors more gracefully
+                if (err.name === "AbortError") {
+                    console.log("Playback aborted - this is normal when navigating");
+                } else {
+                    console.error("Playback error:", err);
+                    setIsPlaying(false);
+                }
+            }
+        };
 
-    audioRef.current
-        .play()
-        .then(() => {
-        console.log("Playing:", audioSrc);
-        setIsPlaying(true);
-        })
-        .catch((err) => {
-        console.error("Playback error:", err);
-        });
-    }, [audioSrc]);
+        playTrack();
+        
+        // Cleanup function to handle component unmounting
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = "";
+            }
+        };
+    }, [music]);
 
     // Handle file upload and set the audio source
     const handleFileUpload = (e) => {
@@ -65,10 +129,32 @@ export default function AudioBox({
         if (file) {
             const url = URL.createObjectURL(file); // set file as URL
             setCustomTrack(url);
-            console.log(`customTrack = ${customTrack}`);
             setCustomDisplay(true);
+            
+            // Store in context
+            setMusic({
+                isCustom: true,
+                url: url,
+                title: "Custom Track",
+                // Don't store the full blob in context as it could be large
+                // Just store the URL which is a reference to the blob
+            });
         }
     };
+
+    // Compare track ID with the currently selected music in context
+    const isTrackSelected = (trackId) => {
+        if (!music) return false;
+        // Make sure we're doing a strict equality check and the track is not custom
+        return music.id === trackId && music.isCustom === false;
+    };
+    
+    // Check if custom track is selected
+    const isCustomSelected = () => {
+        return music?.isCustom === true;
+    };
+
+    console.log("Current music state:", music);
 
     return (
         <div className="flex flex-col gap-1 items-center justify-center w-[58%] h-full">
@@ -84,15 +170,19 @@ export default function AudioBox({
                     disabled={currentPage === 0}
                 />
                 
-                {tracks.map((track, idx) => (
-                    <AudioItem 
-                        key={idx} 
-                        track={track} 
-                        playAudio={playAudio} 
-                        isPlaying={isPlaying} 
-                        audioSrc={audioSrc}
-                    />
-                ))}
+                {tracks.map((track, idx) => {
+                    const selected = isTrackSelected(track.id);
+                    console.log(`Track ${track.id} selected:`, selected);
+                    return (
+                        <AudioItem 
+                            key={idx} 
+                            track={track} 
+                            playAudio={playAudio} 
+                            isPlaying={isPlaying} 
+                            audioSrc={audioSrc}
+                        />
+                    );
+                })}
                 
                 <PaginationIcon 
                     path="M2 26L14 14L2 2" 
@@ -104,8 +194,8 @@ export default function AudioBox({
             {/* Show the Custom button only if an audio file is uploaded */}
             {customDisplay && (
                 <button
-                    onClick={() => playAudio(customTrack)}
-                    style={(audioSrc && audioSrc === customTrack) && (isPlaying) ? { outline: "2px solid #B3445A" } : {}}
+                    onClick={() => playAudio(customTrack, null, true)}
+                    style={(audioSrc && audioSrc === customTrack) ? { outline: "2px solid #B3445A" } : {}}
                     className="flex flex-row items-center justify-center gap-2 w-[92.5%] h-16 mb-7 py-9 bg-[#3A141E] 
                     text-3xl rounded-[30px] shadow-lg hover:bg-[#6F2539] ease-in duration-65"
                 >
@@ -127,28 +217,25 @@ export default function AudioBox({
             
             {/* Hidden audio element that plays the uploaded file */}
             {audioSrc && <audio ref={audioRef} src={audioSrc} />}
+            
 
             <NextButton />
         </div>
     );
 
-    function AudioItem({ track, playAudio, isPlaying, audioSrc }) {
+    function AudioItem({ track, playAudio, isSelected }) {
+        console.log(`Rendering AudioItem ${track.id}, isSelected:`, isSelected);
         return (
           <button
-            onClick={() => playAudio(track.url)}
+            onClick={() => playAudio(track.url, track.id, false)}
             style={
-                (audioSrc && audioSrc === track.url) && (isPlaying)
+                (audioSrc && audioSrc === track.url)
                   ? { outline: "2px solid #B3445A" }  // Apply style only to the current track
                   : {}
               }
             className="flex flex-col items-center justify-center w-full h-full p-4 bg-[#3A141E] rounded-[25px] hover:bg-[#6F2539] ease-in duration-65 cursor-pointer shadow-lg"
           >
             <AudioIcon />
-            {track && (
-              <div className="text-white text-sm mt-2 text-center">
-                <div className="font-bold">{track.title}</div>
-              </div>
-            )}
           </button>
         );
     }

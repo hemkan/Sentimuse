@@ -1,7 +1,8 @@
-// components/MusicSearch.js
+// components/Music.js
 import { useEffect, useState } from "react";
-import MainHeader from './components/Header'; 
-import AudioBox from './components/AudioBox';
+import MainHeader from '../components/Header'; 
+import AudioBox from '../components/AudioBox';
+// No need to import the context here if it's provided at a higher level
 
 export default function Music() {
   const [allTracks, setAllTracks] = useState([]); // Store all 12 tracks
