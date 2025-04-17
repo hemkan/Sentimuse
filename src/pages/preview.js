@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
 
-const Visual = () => {
+const Preview = () => {
   const [isModal, setIsModal] = useState(false);
   const [input1, setInput1] = useState(null);
   const [loading, setLoading] = useState(true); // this is set to true so that we can test the api
@@ -106,4 +106,4 @@ const Visual = () => {
   );
 };
 
-export default Visual;
+export default Preview;

@@ -1,0 +1,18 @@
+export const sentimentOptions = [
+  "Joy",
+  "Sadness",
+  "Anger",
+  "Fear",
+  "Surprise",
+  "Disgust",
+  "Love",
+  "Hope",
+  "Despair",
+  "Excitement",
+  "Calm",
+  "Anxiety",
+  "Pride",
+  "Shame",
+  "Gratitude",
+  "Envy",
+];
