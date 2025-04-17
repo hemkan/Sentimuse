@@ -8,8 +8,7 @@ import { MdOutlineReplay, MdAutoDelete } from "react-icons/md";         // Repla
 import { PiFilePlus } from "react-icons/pi";                            // Add file symbol
 import { PuffLoader } from "react-spinners";                            // Loading Screen Spinner
 import { useRouter } from "next/router";
-// import { usePoemContext } from "@/context/poemContext";
-import { PoemContext } from "@/context/poemContext";
+import { usePoemContext } from "@/context/poemContext";
 
 const EditorPage = () => {
     
@@ -28,12 +27,11 @@ const EditorPage = () => {
     const router = useRouter();                                     // Used to route to next page
 
     const { poem, option } = useContext(UserPoemContext);
-    const { setPoem } = useContext(PoemContext);
+    const { setPoem } = usePoemContext();
 
     useEffect(() => {
         if (option !== 1) {         // User chose to create their own poem
             setUserEdit(true);
-            setisGeneratedPoem(false);
         }
         else if (option === 1 && poem.length === 0) {       // The poem is not generated yet
             setLoading(true);
@@ -58,13 +56,14 @@ const EditorPage = () => {
     // Function to handle adding a new line at the end of the poem
     const handleAdd = (e) => {
         if (e.key === "Enter" && inputRef.current.value.trim() !== "") {
+            setisGeneratedPoem(true);
             e.preventDefault();
 
             const newLine = inputRef.current.value.trim();
             const newPoem = [...userPoem];
             
             newPoem.push(newLine);
-            setisGeneratedPoem(false);
+            setisGeneratedPoem(true);
             setUserPoem(newPoem);
             inputRef.current.value = "";
             e.target.value = "";
@@ -189,7 +188,7 @@ const EditorPage = () => {
     // Function to set the poem
     const displayPoem = async (data) => {
         const poem = data.response.split("\n").filter(line => line.trim() !== "").map(line => line.trim());
-        setisGeneratedPoem(false);
+        setisGeneratedPoem(true);
         setUserPoem(poem);
     };
 
@@ -235,7 +234,7 @@ const EditorPage = () => {
                                 <motion.li                            
                                     key={index}
                                     variants={animationList}    // Use attributes from the animationList function
-                                    initial="hidden"            // Before animation 
+                                    initial={ isGeneratedPoem ? "hidden" : "visible"}            // Before animation 
                                     animate="visible"           // After animation
                                     transition={{ duration: 0.3 }}  // 
                                     exit="hidden"               // Animation when the tag is removed

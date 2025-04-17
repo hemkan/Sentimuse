@@ -13,6 +13,9 @@ export default {
   ],
   theme: {
   	extend: {
+		fontFamily: {
+			pageTitleFont: ['Inria Sans', 'sans-serif'],
+		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+
+@font-face {
+  font-display: swap;
+  font-family: 'Inria Sans';
+  src: url('fonts/Inria Sans/InriaSans-Regular.ttf');
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

@@ -85,10 +85,10 @@ const Poem = () => {
 
 
   return (
-    <div className="bg-black">
+    <div className="bg-[#191113] font-pageTitleFont">
       {/* Nav bar */}
-      <nav className="w-full justify-between top-0 left-0 p-5 pl-20 border border-1 border-transparent border-b-white/50">
-        <header className="text-xl">Sentimuse</header>
+      <nav className="h-[132px] flex w-full items-center p-5 pl-20 border border-1 border-transparent border-b-white/50">
+        <header className="left-[64px] m-auto ml-0 text-[32px]">Sentimuse</header>
       </nav>
       {/* Main body */}
       <main className="place-items-center pb-[100px] pt-[100px]">
@@ -108,8 +108,8 @@ const Poem = () => {
               setButtonVisible(false);
               setEditorPage(true);
             }} 
-            className="rounded-[20px] p-[40px] w-[375px] h-[375px] bg-[#3A141E] hover:bg-[#351E29] transition delay-100 ease-in-out">
-              <h3 className="text-4xl font-semibold mb-3">Create with AI</h3>
+            className="rounded-[20px] p-[40px] w-[350px] h-[351px] bg-[#3A141E] border border-transparent hover:border-[#B3445A] transition delay-50 ease-in-out">
+              <h3 className="text-[40px] font-semibold mb-3">Create with AI</h3>
               <p>Let AI generate a poem for you</p>
             </button>
           )}
@@ -126,7 +126,7 @@ const Poem = () => {
               setButtonVisible(false);
               setEditorPage(true);
             }}
-            className="rounded-[20px] p-[40px] w-[375px] h-[375px] bg-[#3A141E] hover:bg-[#351E29] transition delay-100 ease-in-out">
+            className="rounded-[20px] p-[40px] w-[350px] h-[351px] bg-[#3A141E] border border-transparent hover:border-[#B3445A] transition delay-50 ease-in-out">
               <h3 className="text-4xl font-semibold mb-3">Create your Own</h3>
               <p>Write your poem with full creative control</p>
             </button>
@@ -157,7 +157,7 @@ const Poem = () => {
                       setEditorPage(false);
                       setPoemLines([]);
                     }} 
-                    className="text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">
+                    className="text-[24px] text-white font-bold rounded-lg p-[30px] h-[45px] w-[190px] bg-[#EC5A72] hover:bg-[#9B489B]">
                       Back
                     </Button>
                 </motion.div>

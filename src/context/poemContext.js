@@ -26,4 +26,4 @@ export const PoemProvider = ({ children }) => {
   );
 };
 
-// export const usePoemContext = () => useContext(PoemContext);
+export const usePoemContext = () => useContext(PoemContext);
