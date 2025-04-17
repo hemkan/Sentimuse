@@ -6,7 +6,7 @@
 @font-face {
   font-display: swap;
   font-family: 'Inria Sans';
-  src: url('fonts/Inria Sans/InriaSans-Regular.ttf');
+  src: url('fonts/InriaSans-Regular.ttf');
 }
 
 :root {
