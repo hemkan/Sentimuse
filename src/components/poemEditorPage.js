@@ -54,7 +54,7 @@ const EditorPage = () => {
 
     // Function to handle adding a new line at the end of the poem
     const handleAdd = (e) => {
-        if (e.key === "Enter" && inputRef.current.value.trim() !== null) {
+        if (e.key === "Enter" && inputRef.current.value.trim() !== "") {
             e.preventDefault();
 
             const newLine = inputRef.current.value.trim();
