@@ -1,12 +1,64 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
 
 const Visual = () => {
   const [isModal, setIsModal] = useState(false);
-  const [input1, setInput1] = useState(
-    "https://hqqavgvrkldbjiupzmwt.supabase.co/storage/v1/object/public/audio-files/uploads/1744849620812-output.mp3"
-  );
+  const [input1, setInput1] = useState(null);
+  const [loading, setLoading] = useState(true); // this is set to true so that we can test the api
+  const [mergedUrl, setMergedUrl] = useState("");
+
+  const file1Ref = useRef(null); // narration
+  const file2Ref = useRef(null); // background
+
+  const handleGenerate = async () => {
+    const formData = new FormData();
+    formData.append("file1", file1Ref.current.files[0]);
+    formData.append("file2", file2Ref.current.files[0]);
+
+    const res = await fetch("/api/merge-mp3", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setMergedUrl(data.url);
+      setInput1(data.url);
+    } else {
+      alert(data.error);
+    }
+  };
+
+  if (loading) {
+    // this changes to three-dots animation but this is background processing for when arriving on this page (extract from context and process)
+    //       // <div className="flex items-center justify-center min-h-screen">
+    //       //   <div className="dot-windmill"></div>
+    //       // </div>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        {!mergedUrl && (
+          <>
+            <input type="file" ref={file1Ref} accept="audio/mp3" />
+            <input type="file" ref={file2Ref} accept="audio/mp3" />
+
+            <button
+              className="bg-[#ec5a72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center px-4 py-2"
+              onClick={handleGenerate}
+              // disabled={loading}
+            >
+              {loading ? "Processing..." : "Generate MP3"}
+            </button>
+          </>
+        )}
+
+        {mergedUrl && (
+          <div className="w-full max-w-xl mt-6">
+            <CustomAudioPlayer url={input1} />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#191113] min-h-screen flex flex-col">

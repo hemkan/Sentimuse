@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
   try {
     const result = await client.createAssembly({
-      files: { file1: narrationPath },
+      files: { file1: narrationPath, file2: backgroundPath },
       params: {
         template_id: "fab4a325ed1043d28598a327725479f2",
       },
