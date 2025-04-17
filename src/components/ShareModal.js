@@ -59,7 +59,7 @@ const ShareModal = ({ isOpen, onClose, fileUrl }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50 transition-opacity duration-300"
+      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300"
       onClick={handleOverlayClick}
     >
       <div className="w-[600px] bg-[#3A141E] rounded-[20px] overflow-hidden transform transition-all duration-300">
