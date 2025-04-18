@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { uploadToSupabase } from "../utils/supabaseClient";
 
-export default function DownloadButton() {
+export default function ExportWindow() {
   const [narrationFile, setNarrationFile] = useState(null);
   const [musicFile, setMusicFile] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [url, setURL] = useState(null);
 
   // if any file is selected, set the file in state
   const handleFileChange = (e, setFile) => {
+    setURL(null);
+    setDownloadUrl(null);
     const file = e.target.files[0];
     if (file) {
       setFile(file);
@@ -16,7 +19,9 @@ export default function DownloadButton() {
   };
 
   // handle the download button click
-  const handleDownload = async () => {
+  const handleProcessing = async () => {
+    setDownloadUrl(null);
+    setURL(null);
     if (!narrationFile || !musicFile) {
       alert("Please select both narration and music files.");
       return;
@@ -40,10 +45,11 @@ export default function DownloadButton() {
       narrationUrl = narrationUrl.data.publicUrl;
     if (musicUrl?.data?.publicUrl) musicUrl = musicUrl.data.publicUrl;
     console.log("Received URLs:", { narrationUrl, musicUrl });
+
+    // validate the URLs
     if (!narrationUrl || !musicUrl) {
       return res.status(400).json({ error: "Missing audio sources" });
     }
-
     if (typeof narrationUrl !== "string" || typeof musicUrl !== "string") {
       throw new Error("Invalid URL format received");
     }
@@ -63,19 +69,18 @@ export default function DownloadButton() {
     const audioBlob = await response2.blob();
     const file = new File([audioBlob], "output.mp3", { type: "audio/mpeg" });
 
-    // create a download link and trigger it
+    // create a URL for the downloaded file
     const url = URL.createObjectURL(audioBlob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "output.mp3";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setDownloadUrl(url);
 
     // upload the MP3 file to Supabase
     const supabaseUrl = await uploadToSupabase(file);
     console.log("Uploaded to Supabase:", supabaseUrl);
+
+    // set the URL for the audio page
+    const fileName = supabaseUrl.split("/").pop();
+    const audioPageUrl = `/audio/${encodeURIComponent(fileName)}`;
+    setURL(audioPageUrl);
 
     setLoading(false);
   };
@@ -93,7 +98,7 @@ export default function DownloadButton() {
         onChange={(e) => handleFileChange(e, setMusicFile)}
       />
       <button
-        onClick={handleDownload}
+        onClick={handleProcessing}
         className="bg-blue-500 text-white p-2 rounded"
         disabled={loading}
       >
@@ -102,10 +107,25 @@ export default function DownloadButton() {
       {downloadUrl && (
         <a
           href={downloadUrl}
-          download="merged_audio.mp3"
           className="block mt-2 text-blue-600"
+          download="generated-audio.mp3"
+          onClick={() => {
+            setTimeout(() => URL.revokeObjectURL(downloadUrl), 5000);
+          }}
         >
           Download MP3
+        </a>
+      )}
+
+      {url && (
+        <a
+          href={url}
+          className="block mt-2 text-blue-600"
+          target="_blank"
+          // open in a new tab
+          rel="noopener noreferrer"
+        >
+          Audio Page
         </a>
       )}
     </div>

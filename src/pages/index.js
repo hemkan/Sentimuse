@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
-import DownloadButton from "../components/DownloadButton";
+import ExportWindow from "../components/ExportWindow";
 
 export default function Home() {
   const narrationUrl = "/audio/sample.mp3";
@@ -9,7 +9,7 @@ export default function Home() {
     <div>
       <p className="text-2xl text-center">Home</p>
       <div className="p-6">
-        <DownloadButton narrationUrl={narrationUrl} musicUrl={musicUrl} />
+        <ExportWindow narrationUrl={narrationUrl} musicUrl={musicUrl} />
       </div>
     </div>
   );

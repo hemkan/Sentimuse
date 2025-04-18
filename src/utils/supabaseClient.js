@@ -8,24 +8,25 @@ export const uploadToSupabase = async (file, folder = "uploads") => {
   try {
     if (!file) throw new Error("No file provided");
 
-    const uniqueFileName = `${folder}/${Date.now()}-${file.name}`;
+    // make filename safe for url
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
 
+    // create a unique filename
+    const uniqueFileName = `${folder}/${Date.now()}-${safeFileName}`;
+
+    // upload the file
     const { data, error } = await supabase.storage
       .from("audio-files")
       .upload(uniqueFileName, file);
 
+    // if there is an error, log it and return null
     if (error) {
       console.error("Supabase upload error:", error.message);
       return null;
     }
 
-    const publicUrl = supabase.storage
-      .from("audio-files")
-      .getPublicUrl(data.path);
-    if (!publicUrl) {
-      throw new Error("Failed to get public URL");
-    }
-
+    // form the url for the uploaded file
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/audio-files/${data.path}`;
     console.log("Uploaded File URL:", publicUrl);
     return publicUrl;
   } catch (error) {
