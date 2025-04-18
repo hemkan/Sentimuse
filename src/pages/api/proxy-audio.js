@@ -2,7 +2,13 @@ import fetch from "node-fetch";
 
 // Proxy API route to handle CORS issues with audio files
 export default async function handler(req, res) {
-  const { url } = req.query;
+  // Only allow GET and POST methods
+  if (req.method !== "GET" && req.method !== "POST") {
+    return res.status(405).json({ error: `Method ${req.method} not allowed` });
+  }
+
+  // Get URL from query params (GET) or request body (POST)
+  const url = req.method === "GET" ? req.query.url : req.body?.url;
 
   if (!url) {
     return res.status(400).json({ error: "URL parameter is required" });

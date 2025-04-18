@@ -40,7 +40,9 @@ export default async function handler(req, res) {
       .on("error", (err) => {
         console.error("FFMPEG Error:", err);
         if (!res.headersSent) {
-          res.status(500).json({ error: "Audio processing failed" });
+          res
+            .status(500)
+            .json({ error: "Audio processing failed", details: err.message });
         }
       })
       .on("end", () => {
@@ -52,7 +54,9 @@ export default async function handler(req, res) {
     outputStream.on("error", (err) => {
       console.error("Stream error:", err);
       if (!res.headersSent) {
-        res.status(500).json({ error: "Streaming error occurred" });
+        res
+          .status(500)
+          .json({ error: "Streaming error occurred", details: err.message });
       }
     });
 
@@ -66,7 +70,9 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("Error processing audio:", error);
     if (!res.headersSent) {
-      res.status(500).json({ error: "Internal Server Error" });
+      res
+        .status(500)
+        .json({ error: "Internal Server Error", details: error.message });
     }
   }
 }
