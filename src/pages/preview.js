@@ -126,9 +126,20 @@ const Preview = () => {
         body: formData,
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        try {
+          const errorData = await res.json();
+          throw new Error(errorData.error || `Server error: ${res.status}`);
+        } catch (jsonError) {
+          throw new Error(`Server error: ${res.status} ${res.statusText}`);
+        }
+      }
 
-      if (res.ok) {
+      const contentType = res.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
+
         // Extract the public URL from the response
         const publicUrl =
           data.publicUrl || data.url?.data?.publicUrl || data.transloaditUrl;
@@ -140,10 +151,15 @@ const Preview = () => {
         setMergedUrl(publicUrl);
         setInput1(publicUrl);
         console.log("Merged URL: ", publicUrl);
-        setLoading(false);
       } else {
-        throw new Error(data.error || "Failed to merge audio files");
+        const audioBlob = await res.blob();
+        const url = URL.createObjectURL(audioBlob);
+        setMergedUrl(url);
+        setInput1(url);
+        console.log("Merged audio blob URL: ", url);
       }
+
+      setLoading(false);
     } catch (error) {
       console.error("Error generating audio:", error);
       alert(`Error: ${error.message}`);

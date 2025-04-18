@@ -16,32 +16,34 @@ const client = new Transloadit({
 });
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
   const form = new IncomingForm({
     maxFileSize: 25 * 1024 * 1024,
     keepExtensions: true,
   });
 
-  const [fields, files] = await new Promise((resolve, reject) =>
-    form.parse(req, (err, fields, files) =>
-      err ? reject(err) : resolve([fields, files])
-    )
-  );
-
-  if (!files.file1 || !files.file2) {
-    return res.status(400).json({ error: "Please upload both files." });
-  }
-
-  // grab the temp file paths
-  const narrationPath = Array.isArray(files.file1)
-    ? files.file1[0].filepath
-    : files.file1.filepath;
-  const backgroundPath = Array.isArray(files.file2)
-    ? files.file2[0].filepath
-    : files.file2.filepath;
-
   try {
+    const [fields, files] = await new Promise((resolve, reject) =>
+      form.parse(req, (err, fields, files) =>
+        err ? reject(err) : resolve([fields, files])
+      )
+    );
+
+    if (!files.file1 || !files.file2) {
+      return res.status(400).json({ error: "Please upload both files." });
+    }
+
+    // grab the temp file paths
+    const narrationPath = Array.isArray(files.file1)
+      ? files.file1[0].filepath
+      : files.file1.filepath;
+    const backgroundPath = Array.isArray(files.file2)
+      ? files.file2[0].filepath
+      : files.file2.filepath;
+
     // Log the file paths for debugging
     console.log("Narration path:", narrationPath);
     console.log("Background path:", backgroundPath);
@@ -99,16 +101,23 @@ export default async function handler(req, res) {
       [narrationPath, backgroundPath].map((p) => fs.unlink(p).catch(() => {}))
     );
 
-    return res.status(200).json({
-      url: {
-        data: {
-          publicUrl: publicUrl,
+    const acceptHeader = req.headers.accept || "";
+    if (acceptHeader.includes("application/json")) {
+      return res.status(200).json({
+        url: {
+          data: {
+            publicUrl: publicUrl,
+          },
         },
-      },
-      publicUrl: publicUrl,
-      transloaditUrl: merged.ssl_url,
-      metadata: merged.meta,
-    });
+        publicUrl: publicUrl,
+        transloaditUrl: merged.ssl_url,
+        metadata: merged.meta,
+      });
+    } else {
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Disposition", "attachment; filename=output.mp3");
+      return res.send(audioBufferNode);
+    }
   } catch (err) {
     console.error("💥 Error:", err);
     return res.status(500).json({ error: err.message });
