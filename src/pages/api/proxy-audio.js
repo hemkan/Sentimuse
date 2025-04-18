@@ -38,8 +38,8 @@ export default async function handler(req, res) {
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     res.setHeader("Cache-Control", "public, max-age=31536000");
 
-    // Stream the response to the client
-    response.body.pipe(res);
+    const buffer = await response.buffer();
+    res.send(buffer);
   } catch (error) {
     console.error("Error proxying audio:", error);
     res.status(500).json({
