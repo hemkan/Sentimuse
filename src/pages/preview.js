@@ -115,8 +115,9 @@ const Preview = () => {
     });
     const data = await res.json();
     if (res.ok) {
-      // setMergedUrl(data.url);
-      // setInput1(data.url);
+      setMergedUrl(data.url);
+      setInput1(data.url);
+      console.log(data.url);
     } else {
       alert(data.error);
     }
