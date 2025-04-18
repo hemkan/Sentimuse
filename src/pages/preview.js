@@ -82,6 +82,8 @@ const Preview = () => {
     if (res.ok) {
       setMergedUrl(data.url);
       setInput1(data.url);
+      console.log("Merged URL: ", data.url);
+      // setLoading(false);
     } else {
       alert(data.error);
     }

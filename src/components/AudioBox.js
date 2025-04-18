@@ -77,8 +77,11 @@ export default function AudioBox({
         // Make sure trackId is definitely set when storing in context
         const selectedTrack = tracks.find((t) => t.id === trackId);
         console.log("Selected track:", selectedTrack);
-        setAudioSrc(url);
-        console.log("Audio source:", url);
+
+        // Use the proxy API route for non-custom tracks
+        const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+        setAudioSrc(proxyUrl);
+        console.log("Audio source (proxied):", proxyUrl);
 
         setMusic({
           id: trackId, // Store the ID for comparison
