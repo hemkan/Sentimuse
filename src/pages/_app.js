@@ -1,10 +1,24 @@
-import "@/styles/globals.css";
-import { PoemProvider } from "../context/poemContext";
+// pages/_app.js
+import { Geist, Geist_Mono } from "next/font/google";
+import { PoemProvider } from '../context/poemContext';
+import '../styles/globals.css';
 
-export default function App({ Component, pageProps }) {
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export default function MyApp({ Component, pageProps }) {
   return (
-    <PoemProvider>
-      <Component {...pageProps} />
-    </PoemProvider>
+    <div className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+      <PoemProvider>
+        <Component {...pageProps} />
+      </PoemProvider>
+    </div>
   );
 }
