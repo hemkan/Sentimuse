@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
+import { usePoemContext } from "@/context/poemContext";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
@@ -13,6 +14,13 @@ const Preview = () => {
     "Roses are red, violets are blue, sugar is sweet, and so are you.";
   const file1Ref = useRef(null); // narration
   const file2Ref = useRef(null); // background
+
+  useEffect(() => {
+    console.log("narration: ", narration);
+    console.log("music: ", music);
+    console.log("poem: ", poem);
+    console.log("sentiment: ", sentiment);
+  }, []);
 
   const genNarration = async (voice, poetry) => {
     try {
@@ -33,6 +41,7 @@ const Preview = () => {
       }
 
       const narrationBlob = await response.blob();
+      console.log("narrationBlob: ", narrationBlob);
       const narrationFile = new File([narrationBlob], "file1.mp3", {
         type: "audio/mpeg",
       });
@@ -58,9 +67,9 @@ const Preview = () => {
     const formData = new FormData();
     const narrationFile = await genNarration(
       narration,
-      `(with ${sentiment}) ${testPoem}`
+      `(with anger) ${testPoem}`
     );
-    const musicFile = await getMusic(music);
+    const musicFile = await getMusic(music.url);
 
     formData.append("file1", narrationFile);
     formData.append("file2", musicFile);
