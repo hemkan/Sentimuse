@@ -2,6 +2,8 @@
 import Transloadit from "transloadit";
 import { promises as fs } from "fs";
 import { uploadToSupabase } from "../../utils/supabaseClient";
+import path from "path";
+import os from "os";
 
 // export const config = {
 //   api: {
@@ -54,13 +56,41 @@ export default async function handler(req, res) {
   try {
     console.log("Creating assembly with files:", { fileUrl1, fileUrl2 });
 
+    const [file1Response, file2Response] = await Promise.all([
+      fetch(fileUrl1),
+      fetch(fileUrl2),
+    ]);
+
+    if (!file1Response.ok || !file2Response.ok) {
+      throw new Error("Failed to download audio files");
+    }
+
+    const [file1Buffer, file2Buffer] = await Promise.all([
+      file1Response.arrayBuffer(),
+      file2Response.arrayBuffer(),
+    ]);
+
+    const tempDir = os.tmpdir();
+    const file1Path = path.join(tempDir, `file1-${Date.now()}.mp3`);
+    const file2Path = path.join(tempDir, `file2-${Date.now()}.wav`);
+
+    await Promise.all([
+      fs.writeFile(file1Path, Buffer.from(file1Buffer)),
+      fs.writeFile(file2Path, Buffer.from(file2Buffer)),
+    ]);
+
     const result = await client.createAssembly({
-      files: { file1: fileUrl1, file2: fileUrl2 },
+      files: { file1: file1Path, file2: file2Path },
       params: {
         template_id: "fab4a325ed1043d28598a327725479f2",
       },
       waitForCompletion: true,
     });
+
+    await Promise.all([
+      fs.unlink(file1Path).catch(() => {}),
+      fs.unlink(file2Path).catch(() => {}),
+    ]);
 
     console.log({ result });
     const merged = result.results["merged-audio"]?.[0];

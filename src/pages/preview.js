@@ -4,6 +4,7 @@ import CustomAudioPlayer from "../components/CustomAudioPlayer";
 import { usePoemContext } from "@/context/poemContext";
 import toWav from "audiobuffer-to-wav";
 import { uploadToSupabase } from "../utils/supabaseClient";
+import { useRouter } from "next/router";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
@@ -11,7 +12,7 @@ const Preview = () => {
   const [loading, setLoading] = useState(true); // this is set to true so that we can test the api
   const [mergedUrl, setMergedUrl] = useState("");
   const { narration, music, poem, sentiment } = usePoemContext();
-
+  const router = useRouter();
   const testPoem =
     "Roses are red, violets are blue, sugar is sweet, and so are you.";
   const file1Ref = useRef(null); // narration
@@ -22,6 +23,21 @@ const Preview = () => {
     console.log("music: ", music);
     console.log("poem: ", poem);
     console.log("sentiment: ", sentiment);
+    if (!poem) {
+      //   router.push("/poem");
+      console.log("no poem");
+    } else if (!music) {
+      router.push("/music");
+    } else if (!sentiment) {
+      //   router.push("/sentiment");
+      console.log("no sentiment");
+    } else if (!narration) {
+      router.push("/narration");
+    } else {
+      console.log("all good");
+      // } else {
+    }
+    handleGenerate();
   }, []);
 
   const genNarration = async (voice, poetry) => {
@@ -77,7 +93,7 @@ const Preview = () => {
     source.buffer = musicBuffer;
 
     const gainNode = offlineCtx.createGain();
-    gainNode.gain.value = 0.1;
+    gainNode.gain.value = 0.25;
 
     source.connect(gainNode);
     gainNode.connect(offlineCtx.destination);
@@ -122,57 +138,42 @@ const Preview = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        fileUrl1: narrationUrl,
-        fileUrl2: musicUrl,
+        fileUrl1: narrationUrl.data.publicUrl,
+        fileUrl2: musicUrl.data.publicUrl,
       }),
     });
     console.log("res: ", res);
-
-    try {
-      const data = await res.json();
-      console.log("Response data:", data);
-
-      if (res.ok) {
-        setMergedUrl(data.url);
-        setInput1(data.url);
-        console.log("Merged URL:", data.url);
-      } else {
-        console.error("Error from server:", data.error);
-        alert(`Error: ${data.error || "Failed to merge audio files"}`);
-      }
-    } catch (error) {
-      console.error("Error parsing response:", error);
-      alert("Failed to process the response from the server");
+    const data = await res.json();
+    if (res.ok) {
+      setMergedUrl(data.url);
+      setInput1(data.url);
+      console.log(data.url);
+      setLoading(false);
+    } else {
+      alert(data.error);
     }
   };
 
   if (loading) {
-    // this changes to three-dots animation but this is background processing for when arriving on this page (extract from context and process)
-    //       // <div className="flex items-center justify-center min-h-screen">
-    //       //   <div className="dot-windmill"></div>
-    //       // </div>
+    // same loading as the music player
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        {!mergedUrl && (
-          <>
-            <input type="file" ref={file1Ref} accept="audio/mp3" />
-            <input type="file" ref={file2Ref} accept="audio/mp3" />
-
-            <button
-              className="bg-[#ec5a72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center px-4 py-2"
-              onClick={handleGenerate}
-              // disabled={loading}
-            >
-              {loading ? "Processing..." : "Generate MP3"}
-            </button>
-          </>
-        )}
-
-        {mergedUrl && (
-          <div className="w-full max-w-xl mt-6">
-            <CustomAudioPlayer src={input1} />
+      <div className="bg-[#191113] min-h-screen flex flex-col">
+        {/* Navbar */}
+        <nav className="w-full h-[132px] bg-[#191113]">
+          <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div className="font-['Inria_Sans'] font-normal text-white text-[32px]">
+              Sentimuse
+            </div>
           </div>
-        )}
+          <div className="w-full h-px bg-[#FFFFFF40]" />
+        </nav>
+
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center h-[30%] w-full">
+            <div className="loading-spinner mb-4"></div>
+            <p className="text-white text-xl">Processing your audio...</p>
+          </div>
+        </div>
       </div>
     );
   }
