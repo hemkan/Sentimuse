@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
+import { usePoemContext } from "@/context/poemContext";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
