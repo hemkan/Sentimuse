@@ -77,8 +77,10 @@ export default function AudioBox({
         // Make sure trackId is definitely set when storing in context
         const selectedTrack = tracks.find((t) => t.id === trackId);
         console.log("Selected track:", selectedTrack);
-        setAudioSrc(url);
-        console.log("Audio source:", url);
+
+        const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+        setAudioSrc(proxyUrl);
+        console.log("Audio source:", proxyUrl);
 
         setMusic({
           id: trackId, // Store the ID for comparison
@@ -104,11 +106,16 @@ export default function AudioBox({
         // Safely update audio source
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
-        audioRef.current.src = music.url;
+
+        const audioUrl = music.isCustom
+          ? music.url
+          : `/api/proxy-audio?url=${encodeURIComponent(music.url)}`;
+
+        audioRef.current.src = audioUrl;
 
         // Use await to catch any errors during play
         await audioRef.current.play();
-        console.log("Playing:", music.url);
+        console.log("Playing:", audioUrl);
         setIsPlaying(true);
       } catch (err) {
         // Handle abort errors more gracefully
@@ -262,7 +269,9 @@ export default function AudioBox({
 
   function AudioItem({ track, playAudio, isSelected }) {
     console.log(`Rendering AudioItem ${track.id}, isSelected:`, isSelected);
-    const isTrackSelected = audioSrc && audioSrc === track.url;
+    const isTrackSelected =
+      audioSrc &&
+      audioSrc === `/api/proxy-audio?url=${encodeURIComponent(track.url)}`;
 
     return (
       <button

@@ -1,13 +1,15 @@
-import { IncomingForm } from "formidable";
+// import { IncomingForm } from "formidable";
 import Transloadit from "transloadit";
 import { promises as fs } from "fs";
 import { uploadToSupabase } from "../../utils/supabaseClient";
+import path from "path";
+import os from "os";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 const client = new Transloadit({
   authKey: process.env.TRANSLOADIT_KEY,
@@ -16,39 +18,79 @@ const client = new Transloadit({
 });
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
-
-  const form = new IncomingForm({
-    maxFileSize: 25 * 1024 * 1024,
-    keepExtensions: true,
-  });
-
-  const [fields, files] = await new Promise((resolve, reject) =>
-    form.parse(req, (err, fields, files) =>
-      err ? reject(err) : resolve([fields, files])
-    )
-  );
-
-  if (!files.file1 || !files.file2) {
-    return res.status(400).json({ error: "Please upload both files." });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // grab the temp file paths
-  const narrationPath = Array.isArray(files.file1)
-    ? files.file1[0].filepath
-    : files.file1.filepath;
-  const backgroundPath = Array.isArray(files.file2)
-    ? files.file2[0].filepath
-    : files.file2.filepath;
+  // const form = new IncomingForm({
+  //   maxFileSize: 25 * 1024 * 1024,
+  //   keepExtensions: true,
+  // });
+  const { fileUrl1, fileUrl2 } = req.body;
+
+  if (!fileUrl1 || !fileUrl2) {
+    return res.status(400).json({ error: "Missing file URLs" });
+  }
+
+  // // const narrationPath = await downloadFromSupabase(file1);
+  // // const backgroundPath = await downloadFromSupabase(file2);
+
+  // // const [fields, files] = await new Promise((resolve, reject) =>
+  // //   form.parse(req, (err, fields, files) =>
+  // //     err ? reject(err) : resolve([fields, files])
+  // //   )
+  // // );
+
+  // if (!files.file1 || !files.file2) {
+  //   return res.status(400).json({ error: "Please upload both files." });
+  // }
+
+  // // grab the temp file paths
+  // const narrationPath = Array.isArray(files.file1)
+  //   ? files.file1[0].filepath
+  //   : files.file1.filepath;
+  // const backgroundPath = Array.isArray(files.file2)
+  //   ? files.file2[0].filepath
+  //   : files.file2.filepath;
 
   try {
+    console.log("Creating assembly with files:", { fileUrl1, fileUrl2 });
+
+    const [file1Response, file2Response] = await Promise.all([
+      fetch(fileUrl1),
+      fetch(fileUrl2),
+    ]);
+
+    if (!file1Response.ok || !file2Response.ok) {
+      throw new Error("Failed to download audio files");
+    }
+
+    const [file1Buffer, file2Buffer] = await Promise.all([
+      file1Response.arrayBuffer(),
+      file2Response.arrayBuffer(),
+    ]);
+
+    const tempDir = os.tmpdir();
+    const file1Path = path.join(tempDir, `file1-${Date.now()}.mp3`);
+    const file2Path = path.join(tempDir, `file2-${Date.now()}.wav`);
+
+    await Promise.all([
+      fs.writeFile(file1Path, Buffer.from(file1Buffer)),
+      fs.writeFile(file2Path, Buffer.from(file2Buffer)),
+    ]);
+
     const result = await client.createAssembly({
-      files: { file1: narrationPath, file2: backgroundPath },
+      files: { file1: file1Path, file2: file2Path },
       params: {
         template_id: "fab4a325ed1043d28598a327725479f2",
       },
       waitForCompletion: true,
     });
+
+    await Promise.all([
+      fs.unlink(file1Path).catch(() => {}),
+      fs.unlink(file2Path).catch(() => {}),
+    ]);
 
     console.log({ result });
     const merged = result.results["merged-audio"]?.[0];
@@ -69,15 +111,21 @@ export default async function handler(req, res) {
     // upload to supabase
     const supabaseUrl = await uploadToSupabase(audioFile, "processed-audio");
     console.log({ supabaseUrl });
-    console.log(supabaseUrl.data.publicUrl);
+
+    const finalUrl =
+      typeof supabaseUrl === "object" && supabaseUrl.data
+        ? supabaseUrl.data.publicUrl
+        : supabaseUrl;
+
+    console.log("Final URL:", finalUrl);
 
     // clean up
-    await Promise.all(
-      [narrationPath, backgroundPath].map((p) => fs.unlink(p).catch(() => {}))
-    );
+    // await Promise.all(
+    //   [narrationPath, backgroundPath].map((p) => fs.unlink(p).catch(() => {}))
+    // );
 
     return res.status(200).json({
-      url: supabaseUrl,
+      url: finalUrl,
       transloaditUrl: merged.ssl_url,
       metadata: merged.meta,
     });
