@@ -24,7 +24,13 @@ const Preview = () => {
 
   const genNarration = async (voice, poetry) => {
     try {
-      const response = await fetch("../api/narrationAPI", {
+      if (!voice || !poetry) {
+        throw new Error("Voice and poetry are required for narration");
+      }
+
+      console.log("Generating narration with voice:", voice);
+
+      const response = await fetch("/api/narrationAPI", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -37,55 +43,111 @@ const Preview = () => {
 
       if (!response.ok) {
         const responseError = await response.json();
-        throw new Error(responseError.error || "An error occurred");
+        throw new Error(
+          responseError.error || "An error occurred during narration generation"
+        );
       }
 
       const narrationBlob = await response.blob();
-      console.log("narrationBlob: ", narrationBlob);
+      console.log("Narration blob size:", narrationBlob.size);
+
+      if (narrationBlob.size === 0) {
+        throw new Error("Generated narration is empty");
+      }
+
       const narrationFile = new File([narrationBlob], "file1.mp3", {
         type: "audio/mpeg",
       });
       return narrationFile;
     } catch (error) {
       console.error("AN ERROR OCCURED: " + error.message || error);
+      throw error; // Re-throw the error to be handled by the caller
     }
   };
 
-  const getMusic = async (music) => {
+  const getMusic = async (musicUrl) => {
     try {
-      const musicBlob = await fetch(music).then((res) => res.blob());
+      if (!musicUrl) {
+        throw new Error("Music URL is undefined");
+      }
+
+      // Use our proxy API endpoint instead of directly fetching from Jamendo
+      const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(musicUrl)}`;
+      const musicBlob = await fetch(proxyUrl).then((res) => res.blob());
       const musicFile = new File([musicBlob], "file2.mp3", {
         type: "audio/mpeg",
       });
       return musicFile;
     } catch (error) {
       console.error("AN ERROR OCCURED: " + error.message || error);
+      throw error; // Re-throw the error to be handled by the caller
     }
   };
 
   const handleGenerate = async () => {
-    const formData = new FormData();
-    const narrationFile = await genNarration(
-      narration,
-      `(with anger) ${testPoem}`
-    );
-    const musicFile = await getMusic(music.url);
+    try {
+      if (!narration) {
+        throw new Error(
+          "Narration is not available. Please select a voice first."
+        );
+      }
 
-    formData.append("file1", narrationFile);
-    formData.append("file2", musicFile);
+      if (!music || !music.url) {
+        throw new Error(
+          "Music is not available. Please select a background track first."
+        );
+      }
 
-    const res = await fetch("/api/merge-mp3", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMergedUrl(data.url);
-      setInput1(data.url);
-      console.log("Merged URL: ", data.url);
-      // setLoading(false);
-    } else {
-      alert(data.error);
+      setLoading(true);
+
+      const formData = new FormData();
+      const narrationFile = await genNarration(
+        narration,
+        `(with anger) ${testPoem}`
+      );
+
+      if (!narrationFile) {
+        throw new Error("Failed to generate narration");
+      }
+
+      const musicFile = await getMusic(music.url);
+
+      if (!musicFile) {
+        throw new Error("Failed to get music file");
+      }
+
+      formData.append("file1", narrationFile);
+      formData.append("file2", musicFile);
+
+      console.log("Submitting files for merging...");
+
+      const res = await fetch("/api/merge-mp3", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Extract the public URL from the response
+        const publicUrl =
+          data.publicUrl || data.url?.data?.publicUrl || data.transloaditUrl;
+
+        if (!publicUrl) {
+          throw new Error("No valid URL returned from the server");
+        }
+
+        setMergedUrl(publicUrl);
+        setInput1(publicUrl);
+        console.log("Merged URL: ", publicUrl);
+        setLoading(false);
+      } else {
+        throw new Error(data.error || "Failed to merge audio files");
+      }
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      alert(`Error: ${error.message}`);
+      setLoading(false);
     }
   };
 

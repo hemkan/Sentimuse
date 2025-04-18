@@ -42,6 +42,21 @@ export default async function handler(req, res) {
     : files.file2.filepath;
 
   try {
+    // Log the file paths for debugging
+    console.log("Narration path:", narrationPath);
+    console.log("Background path:", backgroundPath);
+
+    // Check if files exist and have content
+    const narrationStats = await fs.stat(narrationPath);
+    const backgroundStats = await fs.stat(backgroundPath);
+
+    console.log("Narration file size:", narrationStats.size);
+    console.log("Background file size:", backgroundStats.size);
+
+    if (narrationStats.size === 0 || backgroundStats.size === 0) {
+      throw new Error("One or both files are empty");
+    }
+
     const result = await client.createAssembly({
       files: { file1: narrationPath, file2: backgroundPath },
       params: {
@@ -57,19 +72,27 @@ export default async function handler(req, res) {
 
     if (!merged) throw new Error("No merge result");
 
-    // download audio file frm Transloadit
+    // download audio file from Transloadit
     const response = await fetch(merged.ssl_url);
-    const audioBlob = await response.blob();
+    const audioBuffer = await response.arrayBuffer();
 
-    // make a file from the blob
-    const audioFile = new File([audioBlob], merged.name, {
-      type: "audio/mpeg",
-    });
+    // Create a Buffer from the ArrayBuffer
+    const audioBufferNode = Buffer.from(audioBuffer);
 
     // upload to supabase
-    const supabaseUrl = await uploadToSupabase(audioFile, "processed-audio");
+    const supabaseUrl = await uploadToSupabase(
+      audioBufferNode,
+      "processed-audio",
+      merged.name
+    );
     console.log({ supabaseUrl });
-    console.log(supabaseUrl.data.publicUrl);
+
+    if (!supabaseUrl || !supabaseUrl.data || !supabaseUrl.data.publicUrl) {
+      throw new Error("Failed to get public URL from Supabase");
+    }
+
+    const publicUrl = supabaseUrl.data.publicUrl;
+    console.log("Public URL:", publicUrl);
 
     // clean up
     await Promise.all(
@@ -77,7 +100,12 @@ export default async function handler(req, res) {
     );
 
     return res.status(200).json({
-      url: supabaseUrl,
+      url: {
+        data: {
+          publicUrl: publicUrl,
+        },
+      },
+      publicUrl: publicUrl,
       transloaditUrl: merged.ssl_url,
       metadata: merged.meta,
     });

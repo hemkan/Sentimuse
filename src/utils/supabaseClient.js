@@ -4,11 +4,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-export const uploadToSupabase = async (file, folder = "uploads") => {
+export const uploadToSupabase = async (
+  file,
+  folder = "uploads",
+  fileName = null
+) => {
   try {
     if (!file) throw new Error("No file provided");
 
-    const uniqueFileName = `${folder}/${Date.now()}-${file.name}`;
+    // Generate a unique filename if not provided
+    const uniqueFileName = `${folder}/${Date.now()}-${fileName || "file"}`;
 
     const { data, error } = await supabase.storage
       .from("audio-files")
