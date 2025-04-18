@@ -53,8 +53,11 @@ const Preview = () => {
     }
   };
 
-  const getMusic = async (music, duration) => {
-    const response = await fetch(music);
+  const getMusic = async (musicUrl, duration) => {
+    const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(musicUrl)}`;
+    console.log("Fetching music from proxy:", proxyUrl);
+
+    const response = await fetch(proxyUrl);
     const musicBlob = await response.blob();
     const arrayBuffer = await musicBlob.arrayBuffer();
 
@@ -155,7 +158,7 @@ const Preview = () => {
 
         {mergedUrl && (
           <div className="w-full max-w-xl mt-6">
-            <CustomAudioPlayer url={input1} />
+            <CustomAudioPlayer src={input1} />
           </div>
         )}
       </div>
