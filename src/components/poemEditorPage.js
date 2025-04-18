@@ -246,7 +246,7 @@ const EditorPage = () => {
 
                                         <div 
                                             onClick={() => handleEdit(index, 1)}
-                                            className="flex flex-col cursor-pointer w-full">
+                                            className="font-poemFont flex flex-col cursor-pointer w-full">
                                             
                                             {/* Display the text field to edit the line at specified index */}
                                             {editID === index ? (
@@ -296,7 +296,7 @@ const EditorPage = () => {
                                                     onClick={() => handleEdit(index + 1, 2)} 
                                                     className="bg-white/25 w-[30px] h-[30px]">
                                                         <IoIosAdd/>
-                                                        <Tooltip id="add-line"/>
+                                                        <Tooltip id="add-line" style={{ borderRadius: "20px", backgroundColor: "#4a1e29", fontSize: "18px" }}/>
                                                 </Button>
 
                                                 {/* Regenerate line button */}
@@ -307,18 +307,18 @@ const EditorPage = () => {
                                                     onClick={() => regenerateLine(index)}
                                                     className="bg-white/25 w-[30px] h-[30px]">
                                                         <MdOutlineReplay/>
-                                                        <Tooltip id="regen-line"/>
+                                                        <Tooltip id="regen-line" style={{ borderRadius: "20px", backgroundColor: "#4a1e29", fontSize: "18px" }}/>
                                                 </Button>
 
                                                 {/* Generate poem based on line Button */}
                                                 <Button 
                                                     type="button"
                                                     data-tooltip-id="gen-poem-line"
-                                                    data-tooltip-content="Regenerate poem"
+                                                    data-tooltip-content="Recreate poem"
                                                     onClick={() => generatePoemBasedOnLine(index)}
                                                     className="bg-white/25 w-[30px] h-[30px]">
                                                         <PiFilePlus/>
-                                                        <Tooltip id="gen-poem-line"/>
+                                                        <Tooltip id="gen-poem-line" style={{ borderRadius: "20px", backgroundColor: "#4a1e29", fontSize: "18px" }}/>
                                                 </Button>
 
                                                 {/* Delete line button */}
@@ -329,7 +329,7 @@ const EditorPage = () => {
                                                     onClick={() => removeLine(index)}
                                                     className="bg-white/25 w-[30px] h-[30px]">
                                                         <MdAutoDelete style={{color: "#C52233"}}/>
-                                                        <Tooltip id="remove-line"/>
+                                                        <Tooltip id="remove-line" style={{ borderRadius: "20px", backgroundColor: "#4a1e29", fontSize: "18px" }}/>
                                                 </Button>
                                             </div>
                                         )}
@@ -377,7 +377,7 @@ const EditorPage = () => {
             {/* Next button */}
             <Button
                 onClick={submitPoem}
-                className="absolute right-0 text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]">
+                className="absolute right-0 text-[24px] text-white font-bold rounded-lg p-[30px] h-[45px] w-[190px] bg-[#EC5A72] hover:bg-[#9B489B]">
                 Next
             </Button>
         </div>  

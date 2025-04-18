@@ -9,6 +9,13 @@
   src: url('fonts/InriaSans-Regular.ttf');
 }
 
+@font-face {
+  font-display: swap;
+  font-family: 'Montserrat';
+  font-weight: 300;
+  src: url('fonts/Montserrat-VariableFont_wght.ttf');
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

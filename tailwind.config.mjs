@@ -15,6 +15,7 @@ export default {
   	extend: {
 		fontFamily: {
 			pageTitleFont: ['Inria Sans', 'sans-serif'],
+			poemFont: ['Montserrat', 'sans-serif'],
 		},
   		colors: {
   			background: 'hsl(var(--background))',
