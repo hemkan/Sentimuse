@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
 import { usePoemContext } from "@/context/poemContext";
+import toWav from "audiobuffer-to-wav";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
@@ -51,25 +52,59 @@ const Preview = () => {
     }
   };
 
-  const getMusic = async (music) => {
-    try {
-      const musicBlob = await fetch(music).then((res) => res.blob());
-      const musicFile = new File([musicBlob], "file2.mp3", {
-        type: "audio/mpeg",
-      });
-      return musicFile;
-    } catch (error) {
-      console.error("AN ERROR OCCURED: " + error.message || error);
-    }
+  const getMusic = async (music, duration) => {
+    const response = await fetch(music);
+    const musicBlob = await response.blob();
+    const arrayBuffer = await musicBlob.arrayBuffer();
+
+    const audioContext = new AudioContext();
+    const musicBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    const outputDuration = duration + 0.5; // 2 seconds more
+    const sampleRate = musicBuffer.sampleRate;
+
+    const offlineCtx = new OfflineAudioContext(
+      musicBuffer.numberOfChannels,
+      outputDuration * sampleRate,
+      sampleRate
+    );
+
+    const source = offlineCtx.createBufferSource();
+    source.buffer = musicBuffer;
+
+    const gainNode = offlineCtx.createGain();
+    gainNode.gain.value = 0.1;
+
+    source.connect(gainNode);
+    gainNode.connect(offlineCtx.destination);
+
+    source.start(0);
+    const newBuffer = await offlineCtx.startRendering();
+
+    const wavBlob = new Blob([toWav(newBuffer)], { type: "audio/wav" });
+    const adjustedFile = new File([wavBlob], "file2.wav", {
+      type: "audio/wav",
+    });
+
+    return adjustedFile;
+  };
+
+  const getAudioDuration = async (audioFile) => {
+    const arrayBuffer = await audioFile.arrayBuffer();
+    const audioContext = new AudioContext();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    return audioBuffer.duration;
   };
 
   const handleGenerate = async () => {
     const formData = new FormData();
     const narrationFile = await genNarration(
       narration,
-      `(with anger) ${testPoem}`
+      `<${sentiment}> ${testPoem}`
     );
-    const musicFile = await getMusic(music.url);
+    const narrationDuration = await getAudioDuration(narrationFile);
+
+    const musicFile = await getMusic(music.url, narrationDuration);
 
     formData.append("file1", narrationFile);
     formData.append("file2", musicFile);
@@ -80,8 +115,8 @@ const Preview = () => {
     });
     const data = await res.json();
     if (res.ok) {
-      setMergedUrl(data.url);
-      setInput1(data.url);
+      // setMergedUrl(data.url);
+      // setInput1(data.url);
     } else {
       alert(data.error);
     }
