@@ -16,7 +16,9 @@ const client = new Transloadit({
 });
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
   // const form = new IncomingForm({
   //   maxFileSize: 25 * 1024 * 1024,
@@ -50,6 +52,8 @@ export default async function handler(req, res) {
   //   : files.file2.filepath;
 
   try {
+    console.log("Creating assembly with files:", { fileUrl1, fileUrl2 });
+
     const result = await client.createAssembly({
       files: { file1: fileUrl1, file2: fileUrl2 },
       params: {
@@ -77,15 +81,21 @@ export default async function handler(req, res) {
     // upload to supabase
     const supabaseUrl = await uploadToSupabase(audioFile, "processed-audio");
     console.log({ supabaseUrl });
-    console.log(supabaseUrl.data.publicUrl);
+
+    const finalUrl =
+      typeof supabaseUrl === "object" && supabaseUrl.data
+        ? supabaseUrl.data.publicUrl
+        : supabaseUrl;
+
+    console.log("Final URL:", finalUrl);
 
     // clean up
-    await Promise.all(
-      [narrationPath, backgroundPath].map((p) => fs.unlink(p).catch(() => {}))
-    );
+    // await Promise.all(
+    //   [narrationPath, backgroundPath].map((p) => fs.unlink(p).catch(() => {}))
+    // );
 
     return res.status(200).json({
-      url: supabaseUrl,
+      url: finalUrl,
       transloaditUrl: merged.ssl_url,
       metadata: merged.meta,
     });

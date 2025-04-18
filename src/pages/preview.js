@@ -118,19 +118,31 @@ const Preview = () => {
 
     const res = await fetch("/api/merge-mp3", {
       method: "POST",
-      body: {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         fileUrl1: narrationUrl,
         fileUrl2: musicUrl,
-      },
+      }),
     });
     console.log("res: ", res);
-    const data = await res.json();
-    if (res.ok) {
-      setMergedUrl(data.url);
-      setInput1(data.url);
-      console.log(data.url);
-    } else {
-      alert(data.error);
+
+    try {
+      const data = await res.json();
+      console.log("Response data:", data);
+
+      if (res.ok) {
+        setMergedUrl(data.url);
+        setInput1(data.url);
+        console.log("Merged URL:", data.url);
+      } else {
+        console.error("Error from server:", data.error);
+        alert(`Error: ${data.error || "Failed to merge audio files"}`);
+      }
+    } catch (error) {
+      console.error("Error parsing response:", error);
+      alert("Failed to process the response from the server");
     }
   };
 
