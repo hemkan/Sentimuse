@@ -7,14 +7,63 @@ const Visual = () => {
   const [input1, setInput1] = useState(null);
   const [loading, setLoading] = useState(true); // this is set to true so that we can test the api
   const [mergedUrl, setMergedUrl] = useState("");
+  const { narration, music, poem, sentiment } = usePoemContext();
 
+  const testPoem =
+    "Roses are red, violets are blue, sugar is sweet, and so are you.";
   const file1Ref = useRef(null); // narration
   const file2Ref = useRef(null); // background
 
+  const genNarration = async (voice, poetry) => {
+    try {
+      const response = await fetch("../api/narrationAPI", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          voice,
+          poetry,
+        }),
+      });
+
+      if (!response.ok) {
+        const responseError = await response.json();
+        throw new Error(responseError.error || "An error occurred");
+      }
+
+      const narrationBlob = await response.blob();
+      const narrationFile = new File([narrationBlob], "file1.mp3", {
+        type: "audio/mpeg",
+      });
+      return narrationFile;
+    } catch (error) {
+      console.error("AN ERROR OCCURED: " + error.message || error);
+    }
+  };
+
+  const getMusic = async (music) => {
+    try {
+      const musicBlob = await fetch(music).then((res) => res.blob());
+      const musicFile = new File([musicBlob], "file2.mp3", {
+        type: "audio/mpeg",
+      });
+      return musicFile;
+    } catch (error) {
+      console.error("AN ERROR OCCURED: " + error.message || error);
+    }
+  };
+
   const handleGenerate = async () => {
     const formData = new FormData();
-    formData.append("file1", file1Ref.current.files[0]);
-    formData.append("file2", file2Ref.current.files[0]);
+    const narrationFile = await genNarration(
+      narration,
+      `(with ${sentiment}) ${testPoem}`
+    );
+    const musicFile = await getMusic(music);
+
+    formData.append("file1", narrationFile);
+    formData.append("file2", musicFile);
 
     const res = await fetch("/api/merge-mp3", {
       method: "POST",
