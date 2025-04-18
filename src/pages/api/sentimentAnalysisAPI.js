@@ -25,10 +25,10 @@ export default async function handler(req, res)
                 {
                     model: "llama3-8b-8192",
                     messages: [
-                        { role: "system", content: "You are an AI that simplifies user-inputted sentiment descriptions into a single-word emotion. Use words like 'joy', 'sadness', 'anger', 'calm', etc." },
+                        { role: "system", content: "You are an AI that simplifies user-inputted sentiment descriptions into a single-word sentiment/emotion. If the input is a single word that is already a sentiment/emotion, such as 'anguish', simply respond back with that word. If the input is unintelligible, simply respond with 'unknown'. ONLY RESPOND WITH ONE WORD." },
                         { role: "user", content: customSentiment },
                     ],
-                    temperature: 0.7,
+                    temperature: 0.5,
                     max_tokens: 5,
                 }),
             });
@@ -64,11 +64,11 @@ export default async function handler(req, res)
             {
                 model: "llama3-8b-8192",
                 messages: [
-                    { role: "system", content: "You are an AI that classifies the overall sentiment of a poem with a single word. You can use words like 'joy', 'sadness', 'anger', 'calm', etc. If the input is unintelligible, simply respond with 'unknown'." },
+                    { role: "system", content: "You are an AI that classifies the overall sentiment of a poem with a single word. You can use words like 'joy', 'sadness', 'anger', 'calm', etc. If the input is unintelligible, simply respond with 'unknown'. ONLY RESPOND WITH ONE WORD." },
                     { role: "user", content: poem },
                 ],
                 temperature: 0.7, //conrols consistency of response
-                max_tokens: 5, //limits response to 5 words max
+                max_tokens: 2, //limits response to 2 words max
             }),
         });
 
