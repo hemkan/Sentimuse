@@ -5,6 +5,7 @@ import { usePoemContext } from "@/context/poemContext";
 import toWav from "audiobuffer-to-wav";
 import { uploadToSupabase } from "../utils/supabaseClient";
 import { useRouter } from "next/router";
+import MainHeader from "../components/Header";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
@@ -175,15 +176,7 @@ const Preview = () => {
     // same loading as the music player
     return (
       <div className="bg-[#191113] min-h-screen flex flex-col">
-        {/* Navbar */}
-        <nav className="w-full h-[132px] bg-[#191113]">
-          <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-            <div className="font-['Inria_Sans'] font-normal text-white text-[32px]">
-              Sentimuse
-            </div>
-          </div>
-          <div className="w-full h-px bg-[#FFFFFF40]" />
-        </nav>
+        <MainHeader />
 
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center justify-center h-[30%] w-full">
@@ -197,24 +190,16 @@ const Preview = () => {
 
   return (
     <div className="bg-[#191113] min-h-screen flex flex-col">
-      {/* Navbar */}
-      <nav className="w-full h-[132px] bg-[#191113]">
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="font-['Inria_Sans'] font-normal text-white text-[32px]">
-            Sentimuse
-          </div>
-        </div>
-        <div className="w-full h-px bg-[#FFFFFF40]" />
-      </nav>
+      <MainHeader />
 
       <div className="flex-1 flex items-center justify-center">
         <main className="w-full max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8 flex-1 flex flex-col justify-between py-12">
-          <h1 className="font-['Inria_Sans'] font-normal text-white text-[40px] mb-[6rem]">
+          <h1 className="font-['Inria_Sans'] font-normal text-white text-[40px] mb-[3rem]">
             Experience &amp; Share
           </h1>
 
           {/* Audio Box */}
-          <div className="bg-[#3a141e] rounded-[20px] py-8 px-4 sm:px-6 mb-[6rem]">
+          <div className="bg-[#3a141e] rounded-[20px] py-8 px-4 sm:px-6 mb-[4rem]">
             <div className="flex flex-col items-center">
               {error ? (
                 <div className="text-red-400 mb-4 p-4 bg-red-900/30 rounded-lg text-center">

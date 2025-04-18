@@ -15,12 +15,10 @@ const Sentiment = () => {
   const [customSentiment, setCustomSentiment] = useState("");
   const [processedSentiment, setProcessedSentiment] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [selectedPane, setSelectedPane] = useState(null);
   const [enterCustom, setEnterCustom] = useState(false);
-  const filteredOptions = sentimentOptions.filter(
-    (option) => option !== aiSentiment
-  );
-  const [shuffledOptions, setShuffledOptions] = useState(filteredOptions);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
 
   //detect sentiment of poem
   const analyzeSentiment = async () => {
@@ -38,6 +36,8 @@ const Sentiment = () => {
       console.error("Error analyzing sentiment:", error);
       setAISentiment("Error");
       setSelectedPane({ type: "AI" });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -51,6 +51,26 @@ const Sentiment = () => {
 
     analyzeSentiment();
   }, []); //empty dependency array [] = tells react to run this only after initial render
+
+  // Shuffle options when aiSentiment changes
+  useEffect(() => {
+    if (!aiSentiment) return;
+
+    const filteredOptions = sentimentOptions.filter(
+      (option) => option !== aiSentiment
+    );
+
+    let arr = [...filteredOptions];
+    let currentIndex = arr.length;
+
+    while (currentIndex !== 0) {
+      let rng = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+      [arr[currentIndex], arr[rng]] = [arr[rng], arr[currentIndex]];
+    }
+
+    setShuffledOptions(arr);
+  }, [aiSentiment]);
 
   //process custom sentiment into single word
   const processCustomSentiment = async () => {
@@ -106,20 +126,6 @@ const Sentiment = () => {
     router.push("/narration");
   };
 
-  //randomly select predefined sentiment options
-  useEffect(() => {
-    let arr = [...filteredOptions];
-    let currentIndex = arr.length;
-
-    while (currentIndex !== 0) {
-      let rng = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-      [arr[currentIndex], arr[rng]] = [arr[rng], arr[currentIndex]];
-    }
-
-    setShuffledOptions(arr);
-  }, [aiSentiment]); //aiSentiment = dependency array - this effect runs everytime aiSentiment changes
-
   return (
     <div className="min-h-screen bg-[#191113] text-white font-['Inria_Sans'] flex flex-col">
       {/* Navbar */}
@@ -139,9 +145,14 @@ const Sentiment = () => {
       <div className="flex-1 flex items-center">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            {!enterCustom ? (
+            {isAnalyzing || !aiSentiment ? (
+              <div className="flex flex-col items-center justify-center h-[30%] w-full">
+                <div className="loading-spinner mb-4"></div>
+                <p className="text-white text-xl">Analyzing your poem...</p>
+              </div>
+            ) : !enterCustom ? (
               <div className="space-y-8">
-                <h2 className="text-4xl mb-[3rem]">Set the Mood</h2>
+                <h2 className="text-[40px] mb-[1rem]">Set the Mood</h2>
 
                 {/* AI-detected sentiment */}
                 <button
@@ -149,12 +160,12 @@ const Sentiment = () => {
                   className={`w-full h-28 rounded-[20px] cursor-pointer transition-all duration-200
                     ${
                       selectedPane?.type === "AI"
-                        ? "bg-pink-900"
-                        : "bg-rose-950"
+                        ? "bg-[#883447]"
+                        : "bg-[#3A141E]"
                     }
-                    hover:ring-2 hover:ring-pink-700`}
+                    hover:ring-2 hover:ring-[#B3445A]`}
                 >
-                  <p className="p-3 text-[25px]">{aiSentiment}</p>
+                  <p className="p-3 text-[35px]">{aiSentiment}</p>
                 </button>
 
                 {/* Predefined sentiment options */}
@@ -169,10 +180,10 @@ const Sentiment = () => {
                         ${
                           selectedPane?.type === "predefined" &&
                           selectedPane.value === option
-                            ? "bg-pink-900"
-                            : "bg-rose-950"
+                            ? "bg-[#883447]"
+                            : "bg-[#3A141E]"
                         }
-                        hover:ring-2 hover:ring-pink-700`}
+                        hover:ring-2 hover:ring-[#B3445A]`}
                     >
                       <p className="p-2 text-[25px]">{option}</p>
                     </button>
@@ -192,10 +203,10 @@ const Sentiment = () => {
                       ${
                         selectedPane?.type === "custom" &&
                         selectedPane.value === processedSentiment
-                          ? "bg-pink-900"
-                          : "bg-rose-950"
+                          ? "bg-[#883447]"
+                          : "bg-[#3A141E]"
                       }
-                      hover:ring-2 hover:ring-pink-700 flex items-center justify-center gap-2`}
+                      hover:ring-2 hover:ring-[#B3445A] flex items-center justify-center gap-2`}
                   >
                     <p className="text-[25px]">{processedSentiment}</p>
                     <LuPencil
@@ -219,36 +230,37 @@ const Sentiment = () => {
                 )}
 
                 {/* Next button */}
-                <div className="flex justify-end" style={{ marginTop: "3rem" }}>
+                <div className="flex justify-end" style={{ marginTop: "1rem" }}>
                   <button
                     onClick={handleProceed}
                     disabled={
                       getFinalSentiment() === "Unknown" ||
                       getFinalSentiment() === ""
                     }
-                    className={`w-48 h-11 rounded-[20px] flex items-center justify-center
+                    // w-48 h-11 rounded-[20px] flex items-center justify-center
+                    className={`w-[190px] h-[45px] bg-[#EC5A72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center                      
                       ${
                         getFinalSentiment() === "Unknown" ||
                         getFinalSentiment() === ""
                           ? "bg-gray-400"
-                          : "bg-red-400"
+                          : "bg-[#EC5A72]"
                       }
-                      hover:ring-2 hover:ring-pink-700 transition-all duration-200`}
+                      hover:ring-2 hover:ring-[#B3445A] transition-all duration-200`}
                   >
                     <p className="text-2xl">Next</p>
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="space-y-8">
-                <h2 className="text-4xl text-center mb-15">
+              <div className="space-y-10">
+                <h2 className="text-[40px] text-center">
                   Enter Your Sentiment
                 </h2>
 
                 {/* Custom input textarea */}
                 <div
                   onClick={() => setSelectedPane({ type: "custom" })}
-                  className="w-full h-28 bg-rose-950 rounded-[20px] cursor-text"
+                  className="w-full h-28 bg-[#3A141E] rounded-[20px] cursor-text"
                 >
                   <input
                     value={customSentiment}
@@ -262,7 +274,7 @@ const Sentiment = () => {
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => setEnterCustom(false)}
-                    className="w-24 h-11 bg-red-400 rounded-[20px] hover:ring-2 hover:ring-pink-700 flex items-center justify-center"
+                    className="w-24 h-11 bg-[#EC5A72] rounded-[20px] hover:ring-2 hover:ring-[#B3445A] flex items-center justify-center"
                   >
                     <span className="text-2xl">🡰</span>
                   </button>
@@ -274,8 +286,8 @@ const Sentiment = () => {
                     }}
                     disabled={!customSentiment}
                     className={`w-48 h-11 rounded-[20px] flex items-center justify-center
-                      ${!customSentiment ? "bg-gray-400" : "bg-red-400"}
-                      hover:ring-2 hover:ring-pink-700 transition-all duration-200`}
+                      ${!customSentiment ? "bg-gray-400" : "bg-[#EC5A72]"}
+                      hover:ring-2 hover:ring-[#B3445A] transition-all duration-200`}
                   >
                     <p className="text-2xl">
                       {isProcessing ? "Processing..." : "Process"}

@@ -175,8 +175,8 @@ export default function AudioBox({
   console.log("Current music state:", music);
 
   return (
-    <div className="flex flex-col gap-1 items-center justify-center w-[70%] h-full">
-      <div className="lg:pl-12 mb-20 w-full text-white text-center lg:text-start text-4xl">
+    <div className="place-items-center flex flex-col gap-1 items-center justify-center w-[70%] h-full">
+      <div className="lg:pl-12 mb-10 w-full text-white text-center lg:text-start text-[40px]">
         Set the Rhythm
       </div>
 

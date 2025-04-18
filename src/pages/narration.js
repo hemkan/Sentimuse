@@ -7,6 +7,7 @@ import { HiMiniSpeakerWave } from "react-icons/hi2";
 import { FaSpinner } from "react-icons/fa6";
 import { usePoemContext } from "@/context/poemContext";
 import { useRouter } from "next/router";
+import MainHeader from "../components/Header";
 
 let voices = [
   { id: "NFG5qt843uXKj4pFvR7C", name: "Adam Stone" },
@@ -137,12 +138,10 @@ const Narration = () => {
 
   return (
     <div className="min-h-dvh flex flex-col bg-[#191113]">
-      <div className="px-12 py-10 border-b border-white">
-        <span className="text-4xl text-white">Sentimuse</span>
-      </div>
+      <MainHeader />
 
-      <div className="mx-auto py-20 px-28 flex flex-col justify-center gap-16 w-full">
-        <h3 className="text-3xl text-white">Choose Your Voice</h3>
+      <div className="mx-auto py-20 px-28 flex flex-col justify-center gap-9 w-full">
+        <h3 className="text-[40px] text-white ml-[4rem]">Choose Your Voice</h3>
         <div className="flex gap-2 items-center">
           <button
             className="p-4 text-white rounded-md hover:bg-[#6F2539] hover:bg-opacity-55 disabled:opacity-50"
@@ -164,7 +163,7 @@ const Narration = () => {
                 return (
                   <div
                     key={voice.id}
-                    className={`flex flex-col justify-center items-center gap-8 h-96 cursor-pointer ${
+                    className={`flex flex-col justify-center items-center gap-8 h-60 cursor-pointer ${
                       selectedVoice === index
                         ? "bg-[#6F2539]"
                         : "bg-[#3A141E] hover:bg-[#4A1925]"
@@ -195,7 +194,7 @@ const Narration = () => {
                         <HiMiniSpeakerWave className="w-[40px] h-[40px]" />
                       )}
                     </button>
-                    <span className="text-2xl text-center">{voice.name}</span>
+                    <span className="text-xl text-center">{voice.name}</span>
                   </div>
                 );
               })}
@@ -211,13 +210,16 @@ const Narration = () => {
           </button>
         </div>
 
-        <button
-          className="ml-auto mr-[70px] px-8 py-2.5 bg-[#cf5267] hover:bg-[#EC5A72] rounded-2xl disabled:opacity-50"
-          disabled={disableVoice || selectedVoice === null}
-          onClick={navigateToNextPage}
-        >
-          Next
-        </button>
+        <div className="flex justify-end mr-[4rem]">
+          <button
+            className="w-[190px] h-[45px] bg-[#EC5A72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center"
+            // ml-auto mr-[70px] px-8 py-2.5 bg-[#cf5267] hover:bg-[#EC5A72] rounded-2xl disabled:opacity-50"
+            disabled={disableVoice || selectedVoice === null}
+            onClick={navigateToNextPage}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,14 +1,20 @@
 @import url("https://fonts.googleapis.com/css2?family=Inria+Sans:wght@300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-display: swap;
+  font-family: "Inria Sans";
+  src: url("fonts/InriaSans-Regular.ttf");
+}
 
 @font-face {
   font-display: swap;
-  font-family: 'Inria Sans';
-  src: url('fonts/InriaSans-Regular.ttf');
+  font-family: "Montserrat";
+  src: url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
 }
 
 :root {
@@ -53,8 +59,6 @@ body {
     transform: rotate(360deg);
   }
 }
-
-
 
 @layer base {
   :root {
@@ -137,8 +141,6 @@ body {
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {

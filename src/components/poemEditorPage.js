@@ -10,7 +10,12 @@ import { PuffLoader } from "react-spinners"; // Loading Screen Spinner
 import { useRouter } from "next/router";
 import { usePoemContext } from "@/context/poemContext";
 
-const EditorPage = () => {
+const EditorPage = ({
+  setPageTitle,
+  setButtonVisible,
+  setEditorPage,
+  setPoemLines,
+}) => {
   const [userPoem, setUserPoem] = useState([]); // User poem variable
   const [editID, setEditID] = useState(null); // ID of edit line
   const [addID, setAddID] = useState(null); // ID of add line
@@ -241,11 +246,11 @@ const EditorPage = () => {
                         defaultValue={line}
                         onKeyDown={(e) => handleSave(e)}
                         onBlur={(e) => handleSave(e)}
-                        className="pl-[6px] h-[32px] w-full flex-grow text-[20px] bg-black/25 text-white"
+                        className="pl-[6px] h-[32px] w-full flex-grow text-[20px] bg-black/25 text-white font-montserrat"
                         autoFocus
                       />
                     ) : (
-                      <p className="pl-[5px] h-full max-w-[100%] flex-grow rounded-md text-[20px] overflow-x-hidden text-clip border border-transparent hover:border-white/25 hover:bg-black/25">
+                      <p className="pl-[5px] h-full max-w-[100%] flex-grow rounded-md text-[20px] overflow-x-hidden text-clip border border-transparent hover:border-white/25 hover:bg-black/25 font-montserrat">
                         {line}
                       </p>
                     )}
@@ -260,7 +265,7 @@ const EditorPage = () => {
                         transition={{ duration: 0.3 }}
                         exit="hidden"
                         placeholder="Type a line here..."
-                        className="pl-[6px] mt-[10px] mb-auto text-[20px] bg-transparent text-white w-full"
+                        className="pl-[6px] mt-[10px] mb-auto text-[20px] bg-transparent text-white w-full font-montserrat"
                         onKeyDown={(e) => addLineBelow(e, addID)}
                         onBlur={() => setAddID(null)}
                         autoFocus
@@ -316,7 +321,7 @@ const EditorPage = () => {
                         onClick={() => removeLine(index)}
                         className="bg-white/25 w-[30px] h-[30px]"
                       >
-                        <MdAutoDelete style={{ color: "#C52233" }} />
+                        <MdAutoDelete style={{ color: "#EC5A72" }} />
                         <Tooltip id="remove-line" />
                       </Button>
                     </div>
@@ -340,7 +345,7 @@ const EditorPage = () => {
                 type="text"
                 placeholder="Add a line and press Enter..."
                 onKeyDown={(e) => handleAdd(e)}
-                className="pl-[5px] w-full h-[50px] rounded-md bg-black/25 border border-transparent text-[20px] text-white delay-75 duration-100 ease-in-out hover:border-white/25"
+                className="pl-[5px] w-full h-[50px] rounded-md bg-black/25 border border-transparent text-[20px] text-white delay-75 duration-100 ease-in-out hover:border-white/25 font-montserrat"
               />
             </motion.li>
           </ul>
@@ -355,7 +360,7 @@ const EditorPage = () => {
                 type="text"
                 placeholder="Write your line and press Enter..."
                 onKeyDown={(e) => handleAdd(e)}
-                className="pl-[5px] text-[20px] bg-transparent text-white w-full"
+                className="pl-[5px] text-[20px] bg-transparent text-white w-full font-montserrat"
                 autoFocus
               />
             </li>
@@ -363,13 +368,29 @@ const EditorPage = () => {
         )}
       </form>
 
-      {/* Next button */}
-      <Button
-        onClick={submitPoem}
-        className="absolute right-0 text-2xl text-white font-bold rounded-lg p-[30px] w-[150px] bg-[#EE2677] hover:bg-[#9B489B]"
-      >
-        Next
-      </Button>
+      {/* Navigation buttons container */}
+      <div className="flex justify-between mt-4">
+        {/* Back button */}
+        <Button
+          onClick={() => {
+            setPageTitle("Create your Poem");
+            setButtonVisible(true);
+            setEditorPage(false);
+            setPoemLines([]);
+          }}
+          className="w-[190px] h-[45px] bg-[#ec5a72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center hover:bg-[#ec5a72] hover:ring-2 hover:ring-[#B3445A] transition-all duration-200"
+        >
+          Back
+        </Button>
+
+        {/* Next button */}
+        <Button
+          onClick={submitPoem}
+          className="w-[190px] h-[45px] bg-[#ec5a72] rounded-[20px] font-['Inria_Sans'] font-normal text-white text-2xl text-center hover:bg-[#ec5a72] hover:ring-2 hover:ring-[#B3445A] transition-all duration-200"
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 };
