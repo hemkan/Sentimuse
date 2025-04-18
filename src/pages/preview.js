@@ -113,6 +113,7 @@ const Preview = () => {
       method: "POST",
       body: formData,
     });
+    console.log("res: ", res);
     const data = await res.json();
     if (res.ok) {
       setMergedUrl(data.url);
