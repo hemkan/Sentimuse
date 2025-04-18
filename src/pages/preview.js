@@ -1,32 +1,177 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
+import { usePoemContext } from "@/context/poemContext";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
   const [input1, setInput1] = useState(null);
   const [loading, setLoading] = useState(true); // this is set to true so that we can test the api
   const [mergedUrl, setMergedUrl] = useState("");
+  const { narration, music, poem, sentiment } = usePoemContext();
 
+  const testPoem =
+    "Roses are red, violets are blue, sugar is sweet, and so are you.";
   const file1Ref = useRef(null); // narration
   const file2Ref = useRef(null); // background
 
-  const handleGenerate = async () => {
-    const formData = new FormData();
-    formData.append("file1", file1Ref.current.files[0]);
-    formData.append("file2", file2Ref.current.files[0]);
+  useEffect(() => {
+    console.log("narration: ", narration);
+    console.log("music: ", music);
+    console.log("poem: ", poem);
+    console.log("sentiment: ", sentiment);
+  }, []);
 
-    const res = await fetch("/api/merge-mp3", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMergedUrl(data.url);
-      setInput1(data.url);
-    } else {
-      alert(data.error);
+  const genNarration = async (voice, poetry) => {
+    try {
+      if (!voice || !poetry) {
+        throw new Error("Voice and poetry are required for narration");
+      }
+
+      console.log("Generating narration with voice:", voice);
+
+      const response = await fetch("/api/narrationAPI", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          voice,
+          poetry,
+        }),
+      });
+
+      if (!response.ok) {
+        const responseError = await response.json();
+        throw new Error(
+          responseError.error || "An error occurred during narration generation"
+        );
+      }
+
+      const narrationBlob = await response.blob();
+      console.log("Narration blob size:", narrationBlob.size);
+
+      if (narrationBlob.size === 0) {
+        throw new Error("Generated narration is empty");
+      }
+
+      const narrationFile = new File([narrationBlob], "file1.mp3", {
+        type: "audio/mpeg",
+      });
+      return narrationFile;
+    } catch (error) {
+      console.error("AN ERROR OCCURED: " + error.message || error);
+      throw error; // Re-throw the error to be handled by the caller
     }
+  };
+
+  const getMusic = async (musicUrl) => {
+    try {
+      if (!musicUrl) {
+        throw new Error("Music URL is undefined");
+      }
+
+      // Use our proxy API endpoint instead of directly fetching from Jamendo
+      const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(musicUrl)}`;
+      const musicBlob = await fetch(proxyUrl).then((res) => res.blob());
+      const musicFile = new File([musicBlob], "file2.mp3", {
+        type: "audio/mpeg",
+      });
+      return musicFile;
+    } catch (error) {
+      console.error("AN ERROR OCCURED: " + error.message || error);
+      throw error; // Re-throw the error to be handled by the caller
+    }
+  };
+
+  const handleGenerate = async () => {
+    try {
+      if (!narration) {
+        throw new Error(
+          "Narration is not available. Please select a voice first."
+        );
+      }
+
+      if (!music || !music.url) {
+        throw new Error(
+          "Music is not available. Please select a background track first."
+        );
+      }
+
+      setLoading(true);
+
+      const narrationFile = await genNarration(
+        narration,
+        `(with anger) ${testPoem}`
+      );
+
+      if (!narrationFile) {
+        throw new Error("Failed to generate narration");
+      }
+
+      const musicFile = await getMusic(music.url);
+
+      if (!musicFile) {
+        throw new Error("Failed to get music file");
+      }
+
+      // Convert files to base64
+      const narrationBase64 = await fileToBase64(narrationFile);
+      const musicBase64 = await fileToBase64(musicFile);
+
+      console.log("Submitting files for processing...");
+
+      const res = await fetch("/api/merge-mp3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file1Base64: narrationBase64,
+          file2Base64: musicBase64,
+          file1Name: narrationFile.name,
+          file2Name: musicFile.name,
+        }),
+      });
+
+      if (!res.ok) {
+        try {
+          const errorData = await res.json();
+          throw new Error(errorData.error || `Server error: ${res.status}`);
+        } catch (jsonError) {
+          throw new Error(`Server error: ${res.status} ${res.statusText}`);
+        }
+      }
+
+      const data = await res.json();
+      console.log("API response:", data);
+
+      if (data.file1Url && data.file2Url) {
+        setMergedUrl(data.file1Url);
+        setInput1(data.file1Url);
+        console.log("Using file URL:", data.file1Url);
+      } else {
+        throw new Error("No valid URLs returned from the server");
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error generating audio:", error);
+      alert(`Error: ${error.message}`);
+      setLoading(false);
+    }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   if (loading) {

@@ -77,8 +77,11 @@ export default function AudioBox({
         // Make sure trackId is definitely set when storing in context
         const selectedTrack = tracks.find((t) => t.id === trackId);
         console.log("Selected track:", selectedTrack);
-        setAudioSrc(url);
-        console.log("Audio source:", url);
+
+        // Use the proxy API route for non-custom tracks
+        const proxyUrl = `/api/proxy-audio?url=${encodeURIComponent(url)}`;
+        setAudioSrc(proxyUrl);
+        console.log("Audio source (proxied):", proxyUrl);
 
         setMusic({
           id: trackId, // Store the ID for comparison
@@ -104,11 +107,17 @@ export default function AudioBox({
         // Safely update audio source
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
-        audioRef.current.src = music.url;
+
+        // Use the proxy API route for non-custom tracks
+        const audioUrl = music.isCustom
+          ? music.url
+          : `/api/proxy-audio?url=${encodeURIComponent(music.url)}`;
+
+        audioRef.current.src = audioUrl;
+        console.log("Playing (proxied):", audioUrl);
 
         // Use await to catch any errors during play
         await audioRef.current.play();
-        console.log("Playing:", music.url);
         setIsPlaying(true);
       } catch (err) {
         // Handle abort errors more gracefully
@@ -199,6 +208,7 @@ export default function AudioBox({
                   playAudio={playAudio}
                   isPlaying={isPlaying}
                   audioSrc={audioSrc}
+                  isTrackSelected={isTrackSelected}
                 />
               );
             })}
@@ -260,24 +270,24 @@ export default function AudioBox({
     </div>
   );
 
-  function AudioItem({ track, playAudio, isSelected }) {
+  function AudioItem({ track, playAudio, isSelected, isTrackSelected }) {
     console.log(`Rendering AudioItem ${track.id}, isSelected:`, isSelected);
-    const isTrackSelected = audioSrc && audioSrc === track.url;
+    const selected = isTrackSelected(track.id);
 
     return (
       <button
         onClick={() => playAudio(track.url, track.id, false)}
         className={`flex flex-col items-center justify-center w-full h-full p-4 rounded-[25px] cursor-pointer shadow-lg ease-in duration-65 ${
-          isTrackSelected ? "bg-[#6F2539]" : "bg-[#3A141E]"
+          selected ? "bg-[#6F2539]" : "bg-[#3A141E]"
         }`}
-        style={!isTrackSelected ? { outline: "none" } : {}}
+        style={!selected ? { outline: "none" } : {}}
         onMouseEnter={(e) => {
-          if (!isTrackSelected) {
+          if (!selected) {
             e.currentTarget.style.outline = "2px solid #B3445A";
           }
         }}
         onMouseLeave={(e) => {
-          if (!isTrackSelected) {
+          if (!selected) {
             e.currentTarget.style.outline = "none";
           }
         }}
