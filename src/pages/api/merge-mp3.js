@@ -1,13 +1,13 @@
-import { IncomingForm } from "formidable";
+// import { IncomingForm } from "formidable";
 import Transloadit from "transloadit";
 import { promises as fs } from "fs";
 import { uploadToSupabase } from "../../utils/supabaseClient";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 const client = new Transloadit({
   authKey: process.env.TRANSLOADIT_KEY,
@@ -18,32 +18,40 @@ const client = new Transloadit({
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end();
 
-  const form = new IncomingForm({
-    maxFileSize: 25 * 1024 * 1024,
-    keepExtensions: true,
-  });
+  // const form = new IncomingForm({
+  //   maxFileSize: 25 * 1024 * 1024,
+  //   keepExtensions: true,
+  // });
+  const { fileUrl1, fileUrl2 } = req.body;
 
-  const [fields, files] = await new Promise((resolve, reject) =>
-    form.parse(req, (err, fields, files) =>
-      err ? reject(err) : resolve([fields, files])
-    )
-  );
-
-  if (!files.file1 || !files.file2) {
-    return res.status(400).json({ error: "Please upload both files." });
+  if (!fileUrl1 || !fileUrl2) {
+    return res.status(400).json({ error: "Missing file URLs" });
   }
 
-  // grab the temp file paths
-  const narrationPath = Array.isArray(files.file1)
-    ? files.file1[0].filepath
-    : files.file1.filepath;
-  const backgroundPath = Array.isArray(files.file2)
-    ? files.file2[0].filepath
-    : files.file2.filepath;
+  // // const narrationPath = await downloadFromSupabase(file1);
+  // // const backgroundPath = await downloadFromSupabase(file2);
+
+  // // const [fields, files] = await new Promise((resolve, reject) =>
+  // //   form.parse(req, (err, fields, files) =>
+  // //     err ? reject(err) : resolve([fields, files])
+  // //   )
+  // // );
+
+  // if (!files.file1 || !files.file2) {
+  //   return res.status(400).json({ error: "Please upload both files." });
+  // }
+
+  // // grab the temp file paths
+  // const narrationPath = Array.isArray(files.file1)
+  //   ? files.file1[0].filepath
+  //   : files.file1.filepath;
+  // const backgroundPath = Array.isArray(files.file2)
+  //   ? files.file2[0].filepath
+  //   : files.file2.filepath;
 
   try {
     const result = await client.createAssembly({
-      files: { file1: narrationPath, file2: backgroundPath },
+      files: { file1: fileUrl1, file2: fileUrl2 },
       params: {
         template_id: "fab4a325ed1043d28598a327725479f2",
       },

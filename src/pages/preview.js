@@ -97,7 +97,7 @@ const Preview = () => {
   };
 
   const handleGenerate = async () => {
-    const formData = new FormData();
+    // const formData = new FormData();
     const narrationFile = await genNarration(
       narration,
       `<${"anger"}> ${testPoem}`
@@ -106,12 +106,18 @@ const Preview = () => {
 
     const musicFile = await getMusic(music.url, narrationDuration);
 
-    formData.append("file1", narrationFile);
-    formData.append("file2", musicFile);
+    const narrationUrl = uploadToSupabase(narrationFile);
+    const musicUrl = uploadToSupabase(musicFile);
+
+    // formData.append("file1", narrationUrl);
+    // formData.append("file2", musicUrl);
 
     const res = await fetch("/api/merge-mp3", {
       method: "POST",
-      body: formData,
+      body: {
+        fileUrl1: narrationUrl,
+        fileUrl2: musicUrl,
+      },
     });
     console.log("res: ", res);
     const data = await res.json();
