@@ -13,10 +13,11 @@ const Preview = () => {
   const [mergedUrl, setMergedUrl] = useState("");
   const { narration, music, poem, sentiment } = usePoemContext();
   const router = useRouter();
-  const testPoem =
-    "Roses are red, violets are blue, sugar is sweet, and so are you.";
+  //   const testPoem = poem;
+  // "Roses are red, violets are blue, sugar is sweet, and so are you.";
   const file1Ref = useRef(null); // narration
   const file2Ref = useRef(null); // background
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     console.log("narration: ", narration);
@@ -66,6 +67,8 @@ const Preview = () => {
       return narrationFile;
     } catch (error) {
       console.error("AN ERROR OCCURED: " + error.message || error);
+      // Return null instead of undefined to prevent the arrayBuffer error
+      return null;
     }
   };
 
@@ -93,7 +96,7 @@ const Preview = () => {
     source.buffer = musicBuffer;
 
     const gainNode = offlineCtx.createGain();
-    gainNode.gain.value = 0.25;
+    gainNode.gain.value = 0.15;
 
     source.connect(gainNode);
     gainNode.connect(offlineCtx.destination);
@@ -117,40 +120,54 @@ const Preview = () => {
   };
 
   const handleGenerate = async () => {
-    // const formData = new FormData();
-    const narrationFile = await genNarration(
-      narration,
-      `<${"anger"}> ${testPoem}`
-    );
-    const narrationDuration = await getAudioDuration(narrationFile);
+    try {
+      // const formData = new FormData();
+      const narrationFile = await genNarration(
+        narration,
+        `<${sentiment}> ${poem}`
+      );
 
-    const musicFile = await getMusic(music.url, narrationDuration);
+      // Check if narrationFile is null (error occurred)
+      if (!narrationFile) {
+        setError("Failed to generate narration. Please try again.");
+        return;
+      }
 
-    const narrationUrl = await uploadToSupabase(narrationFile);
-    const musicUrl = await uploadToSupabase(musicFile);
+      const narrationDuration = await getAudioDuration(narrationFile);
 
-    // formData.append("file1", narrationUrl);
-    // formData.append("file2", musicUrl);
+      const musicFile = await getMusic(music.url, narrationDuration);
 
-    const res = await fetch("/api/merge-mp3", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fileUrl1: narrationUrl.data.publicUrl,
-        fileUrl2: musicUrl.data.publicUrl,
-      }),
-    });
-    console.log("res: ", res);
-    const data = await res.json();
-    if (res.ok) {
-      setMergedUrl(data.url);
-      setInput1(data.url);
-      console.log(data.url);
-      setLoading(false);
-    } else {
-      alert(data.error);
+      const narrationUrl = await uploadToSupabase(narrationFile);
+      const musicUrl = await uploadToSupabase(musicFile);
+
+      // formData.append("file1", narrationUrl);
+      // formData.append("file2", musicUrl);
+
+      const res = await fetch("/api/merge-mp3", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileUrl1: narrationUrl.data.publicUrl,
+          fileUrl2: musicUrl.data.publicUrl,
+        }),
+      });
+      console.log("res: ", res);
+      const data = await res.json();
+      if (res.ok) {
+        setMergedUrl(data.url);
+        setInput1(data.url);
+        console.log(data.url);
+        setLoading(false);
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error("Error in handleGenerate:", error);
+      setError(
+        "An error occurred while generating the preview. Please try again."
+      );
     }
   };
 
@@ -199,6 +216,11 @@ const Preview = () => {
           {/* Audio Box */}
           <div className="bg-[#3a141e] rounded-[20px] py-8 px-4 sm:px-6 mb-[6rem]">
             <div className="flex flex-col items-center">
+              {error ? (
+                <div className="text-red-400 mb-4 p-4 bg-red-900/30 rounded-lg text-center">
+                  {error}
+                </div>
+              ) : null}
               <CustomAudioPlayer src={input1} />
             </div>
           </div>

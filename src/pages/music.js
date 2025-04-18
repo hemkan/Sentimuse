@@ -1,19 +1,20 @@
 // components/Music.js
 import { useEffect, useState } from "react";
-import MainHeader from '../components/Header'; 
-import AudioBox from '../components/AudioBox';
+import MainHeader from "../components/Header";
+import AudioBox from "../components/AudioBox";
 // No need to import the context here if it's provided at a higher level
 
 export default function Music() {
   const [allTracks, setAllTracks] = useState([]); // Store all 12 tracks
   const [currentPage, setCurrentPage] = useState(0); // Track current page (0-based index)
   const tracksPerPage = 4; // Number of tracks to display per page
-  
-  useEffect(() => { 
+
+  useEffect(() => {
     fetchTracks(); // call promise
-  }, []); 
+  }, []);
 
   const fetchTracks = async () => {
+    // query should be the sentiment
     const query = " (lofi instrumental)";
     if (!query.trim()) return;
 
@@ -21,9 +22,9 @@ export default function Music() {
       const response = await fetch("/api/createMusic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           prompt: query,
-          limit: 12 // Request 12 tracks from the API
+          limit: 12, // Request 12 tracks from the API
         }),
       });
 
@@ -65,7 +66,7 @@ export default function Music() {
       <MainHeader />
       <div className="w-screen h-[calc(100vh-132px)] flex flex-col items-center justify-center">
         {/*Pass the current page tracks and pagination handlers*/}
-        <AudioBox 
+        <AudioBox
           tracks={getCurrentPageTracks()}
           onPrevPage={goToPreviousPage}
           onNextPage={goToNextPage}
