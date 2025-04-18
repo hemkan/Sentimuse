@@ -247,15 +247,16 @@ export default function AudioBox({
 
           {/* Show the file upload input only if no custom track is selected */}
           {!customDisplay && (
-            <label className="mb-8 text-center cursor-pointer text-white text-2xl font-normal">
-              + Add your own
-              <input
-                type="file"
-                accept="audio/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
-            </label>
+            // <label className="mb-8 text-center cursor-pointer text-white text-2xl font-normal">
+            //   + Add your own
+            //   <input
+            //     type="file"
+            //     accept="audio/*"
+            //     className="hidden"
+            //     onChange={handleFileUpload}
+            //   />
+            // </label>
+            <></>
           )}
 
           {/* Hidden audio element that plays the uploaded file */}
