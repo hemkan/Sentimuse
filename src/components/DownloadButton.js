@@ -16,6 +16,19 @@ export default function DownloadButton() {
     }
   };
 
+  // trying to convert the file to base64 for vercel deployment
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   // handle the download button click
   const handleDownload = async () => {
     if (!narrationFile || !musicFile) {
@@ -27,36 +40,22 @@ export default function DownloadButton() {
     setError(null);
 
     try {
-      // upload files to Supabase
-      let narrationUrl = await uploadToSupabase(narrationFile);
-      let musicUrl = await uploadToSupabase(musicFile);
+      // Convert files to base64
+      const narrationBase64 = await fileToBase64(narrationFile);
+      const musicBase64 = await fileToBase64(musicFile);
 
-      if (!narrationUrl || !musicUrl) {
-        setLoading(false);
-        alert("File upload failed. Try again.");
-        return;
-      }
-      console.log("Uploaded URLs:", { narrationUrl, musicUrl });
-
-      // put the URLs in the correct format
-      if (narrationUrl?.data?.publicUrl)
-        narrationUrl = narrationUrl.data.publicUrl;
-      if (musicUrl?.data?.publicUrl) musicUrl = musicUrl.data.publicUrl;
-      console.log("Received URLs:", { narrationUrl, musicUrl });
-
-      if (!narrationUrl || !musicUrl) {
-        throw new Error("Missing audio sources");
-      }
-
-      if (typeof narrationUrl !== "string" || typeof musicUrl !== "string") {
-        throw new Error("Invalid URL format received");
-      }
-
-      // call the API to generate the MP3
-      const response = await fetch("/api/gen-mp3", {
+      // Call the API with base64 encoded files
+      const response = await fetch("/api/merge-mp3", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ narrationUrl, musicUrl }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file1Base64: narrationBase64,
+          file2Base64: musicBase64,
+          file1Name: narrationFile.name,
+          file2Name: musicFile.name,
+        }),
       });
 
       // Check if the response is OK
@@ -75,33 +74,20 @@ export default function DownloadButton() {
         }
       }
 
-      // Check the content type to determine how to handle the response
-      const contentType = response.headers.get("content-type");
+      const data = await response.json();
+      console.log("API response:", data);
 
-      if (contentType && contentType.includes("application/json")) {
-        // Handle JSON response (likely an error)
-        const jsonData = await response.json();
-        throw new Error(jsonData.error || "Unknown error occurred");
-      } else {
-        // Handle binary response (audio file)
-        const audioBlob = await response.blob();
-        const file = new File([audioBlob], "output.mp3", {
-          type: "audio/mpeg",
-        });
+      if (data.file1Url && data.file2Url) {
+        setDownloadUrl(data.file1Url);
 
-        // create a download link and trigger it
-        const url = URL.createObjectURL(audioBlob);
         const a = document.createElement("a");
-        a.href = url;
+        a.href = data.file1Url;
         a.download = "output.mp3";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        // upload the MP3 file to Supabase
-        const supabaseUrl = await uploadToSupabase(file);
-        console.log("Uploaded to Supabase:", supabaseUrl);
+      } else {
+        throw new Error("No valid URLs returned from the server");
       }
     } catch (err) {
       console.error("Error generating audio:", err);

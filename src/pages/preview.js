@@ -100,7 +100,6 @@ const Preview = () => {
 
       setLoading(true);
 
-      const formData = new FormData();
       const narrationFile = await genNarration(
         narration,
         `(with anger) ${testPoem}`
@@ -116,14 +115,23 @@ const Preview = () => {
         throw new Error("Failed to get music file");
       }
 
-      formData.append("file1", narrationFile);
-      formData.append("file2", musicFile);
+      // Convert files to base64
+      const narrationBase64 = await fileToBase64(narrationFile);
+      const musicBase64 = await fileToBase64(musicFile);
 
-      console.log("Submitting files for merging...");
+      console.log("Submitting files for processing...");
 
       const res = await fetch("/api/merge-mp3", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file1Base64: narrationBase64,
+          file2Base64: musicBase64,
+          file1Name: narrationFile.name,
+          file2Name: musicFile.name,
+        }),
       });
 
       if (!res.ok) {
@@ -135,28 +143,15 @@ const Preview = () => {
         }
       }
 
-      const contentType = res.headers.get("content-type");
+      const data = await res.json();
+      console.log("API response:", data);
 
-      if (contentType && contentType.includes("application/json")) {
-        const data = await res.json();
-
-        // Extract the public URL from the response
-        const publicUrl =
-          data.publicUrl || data.url?.data?.publicUrl || data.transloaditUrl;
-
-        if (!publicUrl) {
-          throw new Error("No valid URL returned from the server");
-        }
-
-        setMergedUrl(publicUrl);
-        setInput1(publicUrl);
-        console.log("Merged URL: ", publicUrl);
+      if (data.file1Url && data.file2Url) {
+        setMergedUrl(data.file1Url);
+        setInput1(data.file1Url);
+        console.log("Using file URL:", data.file1Url);
       } else {
-        const audioBlob = await res.blob();
-        const url = URL.createObjectURL(audioBlob);
-        setMergedUrl(url);
-        setInput1(url);
-        console.log("Merged audio blob URL: ", url);
+        throw new Error("No valid URLs returned from the server");
       }
 
       setLoading(false);
@@ -165,6 +160,18 @@ const Preview = () => {
       alert(`Error: ${error.message}`);
       setLoading(false);
     }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1];
+        resolve(base64String);
+      };
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   if (loading) {
