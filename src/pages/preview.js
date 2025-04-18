@@ -100,7 +100,7 @@ const Preview = () => {
     const formData = new FormData();
     const narrationFile = await genNarration(
       narration,
-      `<${sentiment}> ${testPoem}`
+      `<${"anger"}> ${testPoem}`
     );
     const narrationDuration = await getAudioDuration(narrationFile);
 
