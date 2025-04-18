@@ -1,25 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Inria+Sans:wght@300;400;700&display=swap");
-body {
-  font-family: "Inria Sans", sans-serif;
-}
-/* @use "three-dots"; */
-@import "three-dots/dist/three-dots.css";
-.dot-windmill {
-  width: 18px !important;
-  height: 18px !important;
-  background-color: #ec5a72 !important;
-}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@font-face {
-  font-family: 'inria';
-  src: url('fonts/InriaSans-Regular.ttf') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-}
 
 :root {
   --background: #ffffff;
@@ -37,5 +20,29 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: inria, Helvetica, sans-serif;
+  font-family: "Inria Sans", sans-serif;
+}
+
+/* @use "three-dots"; */
+@import "three-dots/dist/three-dots.css";
+.dot-windmill {
+  width: 18px !important;
+  height: 18px !important;
+  background-color: #ec5a72 !important;
+}
+
+/* Custom loading spinner */
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #b3445a;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

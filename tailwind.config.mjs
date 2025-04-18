@@ -1,4 +1,4 @@
-import { Inria_Sans } from 'next/font/google';
+import { Inria_Sans } from "next/font/google";
 
 /** @type {import('tailwindcss').Config} */
 export default {
