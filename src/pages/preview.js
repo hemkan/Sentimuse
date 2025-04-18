@@ -3,6 +3,7 @@ import ShareModal from "../components/ShareModal";
 import CustomAudioPlayer from "../components/CustomAudioPlayer";
 import { usePoemContext } from "@/context/poemContext";
 import toWav from "audiobuffer-to-wav";
+import { uploadToSupabase } from "../utils/supabaseClient";
 
 const Preview = () => {
   const [isModal, setIsModal] = useState(false);
@@ -106,8 +107,8 @@ const Preview = () => {
 
     const musicFile = await getMusic(music.url, narrationDuration);
 
-    const narrationUrl = uploadToSupabase(narrationFile);
-    const musicUrl = uploadToSupabase(musicFile);
+    const narrationUrl = await uploadToSupabase(narrationFile);
+    const musicUrl = await uploadToSupabase(musicFile);
 
     // formData.append("file1", narrationUrl);
     // formData.append("file2", musicUrl);
