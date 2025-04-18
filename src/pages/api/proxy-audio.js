@@ -34,6 +34,8 @@ export default async function handler(req, res) {
     // Set appropriate headers
     res.setHeader("Content-Type", contentType || "audio/mpeg");
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     res.setHeader("Cache-Control", "public, max-age=31536000");
 
     // Stream the response to the client
